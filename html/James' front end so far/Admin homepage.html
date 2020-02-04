@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+    <style>
+        
+        * {
+            box-sizing: border-box
+        }
+        
+        body {
+	 	background-color:#eaecee;
+	 	font-family:century;
+	 	}
+        
+        .global_nav_bar{
+		padding-left:16px;
+		padding-right:16px;
+		margin-left:20px;
+		margin-right:20px;
+		position: relative;
+		display:fixed;
+		border-radius:3px;
+		background-color:#aeb6bf;
+		width:96%;
+		}
+		
+		.nav_bar{
+		display:fixed;
+		float:right;
+		font-size:20px;
+		padding-top:20px;
+		}
+        
+        .logo {
+	 	background-color:#aeb6bf;
+		display:inline-flex;
+		flex-direction:row;
+		cursor:pointer;
+		font-size:56px;
+		font-family:Century;
+		width:200px;
+		}
+        
+        .section {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            min-height: 375px;
+            max-height: 500px;
+            margin: auto;
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .column {
+            float: left;
+            width: 50%;
+            padding: 15px;
+        }
+        
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        @media screen and (max-width: 600px) {
+            .column.left, .column.right {
+                width: 100%
+            }
+        }
+        
+        .title {
+            text-align: center;
+        }
+        
+        img {
+        width: 40%;
+        border: 5px solid white;
+    }
+      
+        .moduletitle {
+            padding-top: 20px;
+            text-align: left;
+            line-height: 1.6
+        }
+        
+        </style>
+       <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+    <title>SAMS | Admin homepage</title>
+</head>
+    
+<body>
+    
+   <nav class="global_nav_bar">
+ 		<div class="logo" title="Return to Home Page">SAMS</div>
+    	<div class="nav_bar">Student Adminstration Management System</div>
+    </nav> 
+    
+    <h1 class="title">Admin Homepage</h1>
+    
+    <div class="column">
+    <div class="section">
+        <img src="/Images/joel.jpg" alt="Profile pic placeholder">
+        <h1>Admin Name</h1>
+        <p>Position</p>
+        <p>University</p>
+    </div>
+    </div>
+    
+    <div class="column">
+        <div class="section">
+            <h1>Placeholder</h1>
+            <div class="moduletitle">
+            <p>Poor Attendance</p>
+            <p>Room Usage/Capacity</p>
+            
+            <p>Ammend Registers</p>
+                </div>
+        </div> 
+    </div>
+    
+    </body>
+</html>
