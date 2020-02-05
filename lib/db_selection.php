@@ -9,17 +9,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 			createDb(checkData($_POST["record"]));
         break;
         case "create":
-            createTable(checkData($_POST)["record"]);
+            createTables(($_POST)["record"]);
         break;
         case "view":
-            viewTable(checkData((int)$_POST["record"]));
+            viewRecord(checkData($_POST["record"]));
         break;
 		default:
 			echo "Enter selection";
 	}
 }
 
-function checkData(string $data){
+function checkData($data){
 	$data = trim($data);
 	$data = stripslashes($data);
 	$data = htmlspecialchars($data);

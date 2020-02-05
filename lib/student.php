@@ -27,7 +27,7 @@ class Student
 
     public function addStudent()
     {
-       createTable($this->id, $this->firstname, $this->lastname, $this->course);
+       createRecord($this->id, $this->firstname, $this->lastname, $this->course, 0);
     }
 
     //Data input security check

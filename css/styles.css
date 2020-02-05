@@ -1,5 +1,4 @@
-@charset="utf-8";
-    	* {
+   		* {
   		box-sizing: border-box;
 		}
     
@@ -86,7 +85,6 @@
 		{
 	 	outline:2px white solid;
 	 	outline-offset:1px;
-	 	outline-radius:2px
 	 	}
 		
 		.password
