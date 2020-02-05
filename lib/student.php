@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+include "db_functions.php";
 
 class Student
 {
@@ -16,13 +17,26 @@ class Student
 
     private $password;
 
-    public function Student(int $_id, string $_first, string $_last, int $_course)
+    public function __construct(int $_id, string $_first, string $_last, string $_course)
     {
-        $id = $_id;
-        $first = $_first;
-        $last = $_last;
-        $course = $_course;
+        $this->id = $_id;
+        $this->firstname = $_first;
+        $this->lastname = $_last;
+        $this->course = $_course;
     }
 
+    public function addStudent()
+    {
+       createTable($this->id, $this->firstname, $this->lastname, $this->course);
+    }
+
+    //Data input security check
+    private function checkData(string $data)
+    {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+    }
 }
 ?>
