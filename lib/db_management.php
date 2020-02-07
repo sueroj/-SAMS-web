@@ -1,86 +1,89 @@
-<?php declare(strict_types=1);
+﻿﻿<?php
+include "db_functions.php";
+$output = null;
+$record = null;
+
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-    createDb(checkData($_POST["record"]));
-}
-
-function checkData(string $data){
-    $data = trim($data);
-    $data = stripslashes($data);
-    $data = htmlspecialchars($data);
-    return $data;
-}
-
-//Connect to MySQL Database
-function createDb(string $newDb){
-    connectDb();
-
-    //Create or verify DB exists
-    $sql = "CREATE DATABASE " . $newDb;
-    if ($conn->query($sql) === TRUE){
-        echo "database " . $newDb . " created.";
-    } else {
-        echo "Error creating database: " . $conn->error;
-    }
-}
-
-function createRecord(int $_id, string $_first, string $_last, string $_course)
-{
-	$statement = $conn->prepare("INSERT INTO StudentDB (id, firstname, lastname, course) VALUES (?, ?, ?, ?)");
-	$statement->bind_param("sss", $id, $firstname, $lastname, $course);
-
-	// set parameters and execute
-	$id = $_id;
-	$firstname = $_first;
-	$lastname = $_last;
-	$course = $_course;
-	$statetment->execute();
-
-}
-
-function viewRecord(int $_id)
-{
-	connectDb();
-	$statement = $conn->prepare("SELECT (id, firstname, lastname, course) FROM StudentDB VALUES (?, ?, ?, ?)");
-	$statement->bind_param("sss", $id, $firstname, $lastname, $course);
-
-	// set parameters and execute
-	$id = $_id;
-	$firstname = $_first;
-	$lastname = $_last;
-	$course = $_course;
-	$statement->execute();
-
-	$result = $conn->query($sql);
-
-	if ($result->num_rows > 0) {
-		// output data of each row
-		while($row = $result->fetch_assoc()) {
-			echo "id: " . $row["id"]. " - Name: " . $row["firstname"]. " " . $row["lastname"]. "<br>";
-		}
-	} else {
-		echo "0 results";
+	switch (checkData($_POST["selection"]))
+	{
+		case "configure": 
+			$output = createDb();
+            $output = createTable();
+        break;
+        case "update":
+            $output = updateRecord(checkData($_POST["record"]));
+        break;
+        case "view":
+            $record = viewRecord(checkData($_POST["record"]));
+        break;
+        case "delete":
+            $output = deleteRecord(checkData($_POST["record"]));
+        break;
+        case "drop":
+            $output = deleteTable();
+		default:
+			$record = "Invalid option.";
 	}
 }
 
-function sortRecord(){
-
+function checkData($data){
+	$data = trim($data);
+	$data = stripslashes($data);
+	$data = htmlspecialchars($data);
+	return $data;
 }
 
-function updateRecord(){
 
-}
-
-function deleteRecord(){
-
-}
-
-//Connect to Database to be reused by many other functions
-function connectDb()
-{
-    $conn = new mysqli("localhost", "root", "");
-    if ($conn->connect_error){
-        die("Connection failed: " . $conn->connect_error);
-    } else { echo "Connected to database. ";}
-}
 ?>
+
+<!DOCTYPE html>
+<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="stylesheet" type="text/css" href="/css/db_styles.css"/>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SAMS | Database Management</title>
+</head>
+
+<body>
+<h1>SAMS Database Management</h1>
+
+<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
+    <div class="textbox">
+    <input type="text" name="record" placeholder="Enter Record">
+        <select name="selection">
+            <option value="view">View Record</option>
+            <option value="update">Update Record</option>
+            <option value="delete">Delete Record</option>
+            <option value="drop">Delete Table</option>
+            <option value="configure">Configure Database</option>
+        </select>
+    <button type="submit">Submit</button>
+    </div>
+</form>
+<div>
+    <?php
+        $conn = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+        if ($conn->connect_error){
+        die("Connection failed: " . $conn->connect_error);
+        } else { echo "Database Status: Connected. ";}
+    ?>
+</div>
+
+<div class="data">
+<table>
+
+    <?php echo $record; ?>
+
+</table>
+</div>
+        Console:
+    <div class="data" style="height:200px;">
+        <?php echo $output; ?>
+    </div>
+
+
+</body>
+<html>

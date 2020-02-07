@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 include "globals.php";
 
-function createTables()
+function createTable()
 {
 	$database = connectDb();
 	
@@ -13,10 +13,11 @@ function createTables()
 
 	$sql = "CREATE TABLE alumni (
 	id INT(7) UNSIGNED PRIMARY KEY,
-	firstname VARCHAR(30) NOT NULL,
-	lastname VARCHAR(30) NOT NULL,
+	first VARCHAR(30) NOT NULL,
+	last VARCHAR(30) NOT NULL,
 	course VARCHAR(30) NOT NULL,
-	lecturer BOOL
+	account INT(1) UNSIGNED,
+	passwd VARCHAR(40) NOT NULL
 	)";
 
 	if ($database->query($sql) === TRUE) {
@@ -27,20 +28,28 @@ function createTables()
 	return $output;
 }
 
-function viewRecord(int $_id)
+function viewRecord(string $_input)
 {
+	$output = null;
 	$database = connectDb();
 
-	$sql = "SELECT id, firstname, lastname, course FROM alumni";
-	$result = $database->query($sql);
+	if($_input == "all"){
+		$sql = "SELECT * FROM alumni ORDER BY id";
+		$result = $database->query($sql);
+	} else {
+		$sql = "SELECT * FROM alumni WHERE id='$_input' ORDER BY id";
+		$result = $database->query($sql);
+	}
+
 
 	if ($result->num_rows > 0) {
 		// output data of each row
 		while($row = $result->fetch_assoc()) {
-			$output = "<td>" . $row["id"] . "</td>".
-					  "<td>" . $row["firstname"] . "</td>".
-					  "<td>" . $row["lastname"] . "</td>".
-					  "<td>" . $row["course"] . "</td>"."<br>";
+			$output .= "<tr><td>" . $row["id"] . "</td>".
+					   "<td>" . $row["first"] . "</td>".
+					   "<td>" . $row["last"] . "</td>".
+					   "<td>" . $row["course"] . "</td>".
+					   "<td>" . $row["passwd"] . "</td></tr>";
 		}
 	} else {
 		$output = "0 results";
@@ -48,12 +57,12 @@ function viewRecord(int $_id)
 	return $output;
 }
 
-function createRecord(int $_id, string $_first, string $_last, string $_course, $_acctType)
+function createRecord(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 {
 	$database = connectDb();
 
-	$sql = "INSERT INTO alumni (id, firstname, lastname, course, lecturer)
-	VALUES ('$_id', '$_first', '$_last', '$_course', '$_acctType')";
+	$sql = "INSERT INTO alumni (id, first, last, course, account, passwd)
+	VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 	
 	if ($database->query($sql) === TRUE) {
     $output = "New record processed.";
@@ -65,14 +74,20 @@ function createRecord(int $_id, string $_first, string $_last, string $_course, 
 	echo $output;
 }
 
-function sortRecord(){
-
-}
 
 
+function deleteTable()
+{
+	$database = connectDb();
 
-function deleteTable(){
+	$sql = "DROP TABLE alumni";
 
+	if ($database->query($sql) === TRUE) {
+		$output = "Table alumni deleted";
+	} else {
+		$output = "Error deleting table: " . $database->error;
+	}
+	return $output;
 }
 
 //Connect to Database to be reused by many other functions

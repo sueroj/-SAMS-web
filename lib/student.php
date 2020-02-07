@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 include "db_functions.php";
+include "users.php";
 
-class Student
+class Student extends Users
 {
     private $id;
 
-    private $firstname;
+    private $first;
 
-    private $lastname;
+    private $last;
 
     private $course;
 
@@ -15,19 +16,20 @@ class Student
 
     private $attended;
 
-    private $password;
+    private $passwd;
 
-    public function __construct(int $_id, string $_first, string $_last, string $_course)
+    public function __construct(int $_id, string $_first, string $_last, string $_course, string $_passwd)
     {
         $this->id = $_id;
-        $this->firstname = $_first;
-        $this->lastname = $_last;
+        $this->first = $_first;
+        $this->last = $_last;
         $this->course = $_course;
+        $this->passwd = md5($_passwd);
     }
 
     public function addStudent()
     {
-       createRecord($this->id, $this->firstname, $this->lastname, $this->course, 0);
+       createRecord($this->id, $this->first, $this->last, $this->course, Users::Student, $this->passwd);
     }
 
     //Data input security check
