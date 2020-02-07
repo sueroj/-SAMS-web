@@ -4,12 +4,6 @@ include "users.php";
 
 class Student extends Users
 {
-    private $id;
-
-    private $first;
-
-    private $last;
-
     private $course;
 
     private $module;

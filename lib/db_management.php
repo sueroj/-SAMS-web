@@ -1,4 +1,7 @@
 ﻿﻿<?php
+//
+//This is the main page for the SAMS web backend environment. This page contains tools for
+//managing and viewing the database.
 include "db_functions.php";
 $output = null;
 $record = null;

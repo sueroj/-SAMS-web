@@ -1,5 +1,7 @@
 <?php
-
+//
+//Abstract class intended to be used by the 3 main classes: Student, Lecturer, Administrator.
+//In work.
 abstract class Users
 {
     const Student = 0;
@@ -8,11 +10,12 @@ abstract class Users
 
     const Admin = 2;
 
+    private $id;
 
+    private $first;
 
-
+    private $last;
 
 }
-
 
 ?>
