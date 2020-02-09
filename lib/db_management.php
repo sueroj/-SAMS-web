@@ -1,8 +1,12 @@
 ﻿﻿<?php
+include "db_functions.php";
+include "testUsers.php"; //test only -- delete after testing
+
 //
 //This is the main page for the SAMS web backend environment. This page contains tools for
 //managing and viewing the database.
-include "db_functions.php";
+
+$database = new Database();
 $output = null;
 $record = null;
 
@@ -11,20 +15,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 	switch (checkData($_POST["selection"]))
 	{
 		case "configure": 
-			$output = createDb();
-            $output = createTable();
+			$output = $database->createDb();
+            $output = $database->createTable();
         break;
         case "update":
-            $output = updateRecord(checkData($_POST["record"]));
+            $output = $database->updateRecord(checkData($_POST["record"]));
         break;
         case "view":
-            $record = viewRecord(checkData($_POST["record"]));
+            $record = $database->viewRecord(checkData($_POST["record"]));
         break;
         case "delete":
-            $output = deleteRecord(checkData($_POST["record"]));
+            $output = $database->deleteRecord(checkData($_POST["record"]));
         break;
         case "drop":
-            $output = deleteTable();
+            $output = $database->deleteTable();
+        break;
+        case "testUsers":           //Test Users for development purposes only
+            $output = TestUsers::addUsers();
+        break;
 		default:
 			$record = "Invalid option.";
 	}
@@ -62,6 +70,8 @@ function checkData($data){
             <option value="delete">Delete Record</option>
             <option value="drop">Delete Table</option>
             <option value="configure">Configure Database</option>
+            <!-- Test Users for development only -->
+            <option value="testUsers">Create Test Users</option>
         </select>
     <button type="submit">Submit</button>
     </div>

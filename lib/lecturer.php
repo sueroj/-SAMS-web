@@ -2,7 +2,7 @@
 include "db_functions.php";
 include "user.php";
 
-class Student extends User
+class Lecturer extends User
 {
     private $course;
 
@@ -21,10 +21,9 @@ class Student extends User
         $this->passwd = md5($_passwd);
     }
 
-    public function addStudent()
+    public function addLecturer()
     {
-        $database = new Database();
-        $database->createRecord($this->id, $this->first, $this->last, $this->course, User::Student, $this->passwd);
+        Database::createRecord($this->id, $this->first, $this->last, $this->course, User::Lecturer, $this->passwd);
     }
 
     //Data input security check

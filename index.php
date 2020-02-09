@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "lib/db_functions.php";
+include "lib/user.php";
 
 //Session "checker": Checks if user is already logged into the system,
 //automatically proceeds to directory.php if the user is logged in.
@@ -17,6 +18,8 @@ $error = null;
 //Username/password verification, send to directory.php if okay.
 if($_SERVER["REQUEST_METHOD"] == "POST")
 {
+	$database = new Database();
+
 	if(empty(checkData($_POST["user"]))){
 		$user_err = "Enter Username.";
 	} else {
@@ -29,8 +32,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 		$passwd = checkData($_POST["passwd"]);
 	}
 
-	if(verifyAccount(checkData($_POST["user"]), checkData($_POST["passwd"]))){
-		header("location: /html/directory.php");
+	if($database->verifyAccount(checkData($_POST["user"]), checkData($_POST["passwd"])))
+	{
+		switch ($_SESSION["account"])
+		{
+			case User::Student:
+				header("location: /pages/student/student_home.html");
+				break;
+			case User::Lecturer:
+				header("location: /pages/lecturer/lecturer_home.html");
+				break;
+			case User::Admin:
+				header("location: /pages/admin/admin_home.html");
+				break;
+		}
 	} else {
 		$error = "Invalid username and/or password.";
 	}
@@ -69,7 +84,7 @@ return $data;
 	    <label for="passwd"><b>Password</b></label>
 	    <input type="password" placeholder="Enter Password" name="passwd" required>
 	    
-		<label class="password"><a href="html/new_user.html">New User?</a></label>
+		<label class="password"><a href="pages/new_user.html">New User?</a></label>
 		<label class="test"><?php echo $error; ?></label>
 	    <button type="submit" class="button">Login</button>
 	    

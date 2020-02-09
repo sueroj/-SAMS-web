@@ -2,7 +2,7 @@
 //
 //Abstract class intended to be used by the 3 main classes: Student, Lecturer, Administrator.
 //In work.
-abstract class Users
+abstract class User
 {
     const Student = 0;
 
