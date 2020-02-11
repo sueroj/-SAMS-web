@@ -37,7 +37,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 		switch ($_SESSION["account"])
 		{
 			case User::Student:
-				header("location: /pages/student/student_home.html");
+				header("location: /pages/student/student_home.php");
 				break;
 			case User::Lecturer:
 				header("location: /pages/lecturer/lecturer_home.html");

@@ -1,3 +1,12 @@
+?php 
+session_start();
+include "/lib/db_functions.php";
+
+
+?>
+
+
+
 <!DOCTYPE html>
 
 <html lang="en-US">
@@ -20,8 +29,8 @@
     <div class="column">
     <div class="section">
         <img src="/Images/linkedin pic.jpg" alt="Profile pic placeholder">
-        <h1>Student Name</h1>
-        <p>SSID</p>
+        <h1><?php echo $_SESSION["first"] . " " . $_SESSION["last"]; ?></h1>
+        <p>?php viewCourse($course); ?></p>
         <p>University</p>
         </div>
     </div>

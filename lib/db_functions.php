@@ -27,7 +27,7 @@ class Database
 	{
 		$field = null;
 
-		$sql = "SELECT id, account, passwd FROM alumni WHERE id='$_id'";
+		$sql = "SELECT id, account, first, last, passwd FROM alumni WHERE id='$_id'";
 		$result = $this->database->query($sql);
 
 		$field = $result->fetch_array(MYSQLI_ASSOC);
@@ -36,6 +36,8 @@ class Database
 				session_start();
 				$_SESSION["loggedin"] = true;
 				$_SESSION["id"] = $_id;
+				$_SESSION["first"] = $field["first"];
+				$_SESSION["last"] = $field["last"];
 				$_SESSION["account"] = $field["account"];
 				$this->database->close();
 				return 1;
