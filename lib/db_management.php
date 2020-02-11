@@ -1,12 +1,15 @@
 ﻿﻿<?php
 include "db_functions.php";
+include "db_configure.php";
 include "testUsers.php"; //test only -- delete after testing
 
 //
 //This is the main page for the SAMS web backend environment. This page contains tools for
 //managing and viewing the database.
 
+checkDb();
 $database = new Database();
+$configure = new Configure();
 $output = null;
 $record = null;
 
@@ -17,6 +20,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		case "configure": 
 			$output = $database->createDb();
             $output = $database->createTable();
+            $output = $configure->createAlumni();
+            $output = $configure->createCourses();
+            $output = $configure->createRooms();
+            //$output = $configure->createAttendance();
         break;
         case "update":
             $output = $database->updateRecord(checkData($_POST["record"]));
@@ -43,6 +50,23 @@ function checkData($data){
 	$data = stripslashes($data);
 	$data = htmlspecialchars($data);
 	return $data;
+}
+
+function checkDb()
+{
+    $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+    if ($database->connect_error){
+        die("Connection failed: " . $conn->connect_error);	
+    }
+
+    //Create or verify DB exists
+    $sql = "CREATE DATABASE samsdb";
+    if ($database->query($sql) === TRUE){
+        $output = "database samsdb created.";
+    } else {
+        $output = "Error creating database: " . $database->error;
+    }
+    return $output;
 }
 
 

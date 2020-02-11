@@ -83,10 +83,17 @@ class Database
 	{
 		$output = null;
 
-		if($_input == "all"){
+		switch ($_input)
+		{
+			case "all":
 			$sql = "SELECT * FROM alumni ORDER BY id";
 			$result = $this->database->query($sql);
-		} else {
+			break;
+			case "rooms":
+			$sql = "SELECT * FROM rooms ORDER BY room";
+			$result = $this->database->query($sql);
+			break;
+			default:
 			$sql = "SELECT * FROM alumni WHERE id='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
 		}
@@ -114,7 +121,7 @@ class Database
 		VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 		
 		if ($this->database->query($sql) === TRUE) {
-		$output = "New record processed.";
+		$output = "New alumni added.";
 		} else {
 				$output = "Error: " . $sql . "<br>" . $this->database->error;
 				}
@@ -122,6 +129,28 @@ class Database
 		return $output;
 
 	}
+
+	//Function used to add rooms to the database, features are in work to calculate students enrolled and attendance.
+	function addRoom(string $_room, int $_capacity)
+    {
+
+		$room = $_room;
+		$attendance = null;         //temporary
+		$enrolled = null;           //temporary
+		$capacity = $_capacity;
+
+		$sql = "INSERT INTO rooms (room, attendance, enrolled, capacity)
+		VALUES ('$room', '$attendance', '$enrolled', '$capacity')";
+		$this->database->query($sql);
+		
+		if ($this->database->query($sql) === TRUE) {
+		$output = "New room added.";
+		} else {
+				$output = "Error: " . $sql . "<br>" . $this->database->error;
+				}
+		
+		return $output;
+    }
 
 	//Function will be used to update records individually.
 	//TO DO: -Not used right now, may be used later at for backend.
