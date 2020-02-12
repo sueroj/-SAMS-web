@@ -43,7 +43,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 				header("location: /pages/lecturer/lecturer_home.html");
 				break;
 			case User::Admin:
-				header("location: /pages/admin/admin_home.html");
+				header("location: /pages/admin/admin_home.php");
 				break;
 		}
 	} else {

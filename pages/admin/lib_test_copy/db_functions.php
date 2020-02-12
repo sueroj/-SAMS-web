@@ -50,82 +50,33 @@ class Database
 		}
 	}
 
-	function getStudent()
-	{
-
-		//Template for getting one or all
-
-
-
-	}
-
-	function getCourse()
-	{
-		//Template for getting one or all
-
-
-
-
-	}
-
-	function getModule()
-	{
-		//Template for getting one or all
-
-
-
-
-	}
-
-	function getAttendance()
-	{
-		//Template for getting one or all
-
-
-
-	}
-
-	function getRoom()
-	{
-		//Template for getting one or all
-
-
-
-	}
-
 	//Creates the main table used by the SAMS web database.
-	//---------------------------------------------------------
-	//*************** MOVED TO db_configure.php **************
-	//-----------------------------------------------------------
-	//
-	// function createStudents()
-	// {	
-	// 	//Verify if database "alumni" exists in MySQL first; if not, create one.
-	// 	$sql = "CREATE DATABASE samsdb";
-	// 	if ($this->database->query($sql) === TRUE){
-	// 		$output =  "New database samsdb created.\n";
-	// 	}
+	function createTable()
+	{	
+		//Verify if database "alumni" exists in MySQL first; if not, create one.
+		$sql = "CREATE DATABASE samsdb";
+		if ($this->database->query($sql) === TRUE){
+			$output =  "New database samsdb created.\n";
+		}
 
-	// 	$sql = "CREATE TABLE students (
-	// 	id INT(7) UNSIGNED PRIMARY KEY,
-	// 	first VARCHAR(30) NOT NULL,
-	// 	last VARCHAR(30) NOT NULL,
-	// 	course VARCHAR(30) NOT NULL,
-	// 	account INT(1) UNSIGNED,
-	// 	passwd VARCHAR(40) NOT NULL
-	// 	)";
+		$sql = "CREATE TABLE alumni (
+		id INT(7) UNSIGNED PRIMARY KEY,
+		first VARCHAR(30) NOT NULL,
+		last VARCHAR(30) NOT NULL,
+		course VARCHAR(30) NOT NULL,
+		account INT(1) UNSIGNED,
+		passwd VARCHAR(40) NOT NULL
+		)";
 
-	// 	if ($this->database->query($sql) === TRUE) {
-	// 		$output = "Table students created successfully";
-	// 	} else {
-	// 		$output = "Error creating table: " . $this->database->error;
-	// 	}
-	// 	return $output;
-	// }
+		if ($this->database->query($sql) === TRUE) {
+			$output = "Table alumni created successfully";
+		} else {
+			$output = "Error creating table: " . $this->database->error;
+		}
+		return $output;
+	}
 
-
-
-	//Views records stored in the samsDb database -> students table
+	//Views records stored in the samsDb database -> alumni table
 	//So far, only recieves user input for searching by ID # and the
 	//debug command "all" records, which lists all records.
 	function viewRecord(string $_input)
@@ -135,7 +86,7 @@ class Database
 		switch ($_input)
 		{
 			case "all":
-			$sql = "SELECT * FROM students ORDER BY id";
+			$sql = "SELECT * FROM alumni ORDER BY id";
 			$result = $this->database->query($sql);
 			break;
 			case "rooms":
@@ -143,7 +94,7 @@ class Database
 			$result = $this->database->query($sql);
 			break;
 			default:
-			$sql = "SELECT * FROM students WHERE id='$_input' ORDER BY id";
+			$sql = "SELECT * FROM alumni WHERE id='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
 		}
 
@@ -164,13 +115,13 @@ class Database
 	}
 
 	//Main function used for create new records.
-	function insertStudent(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
+	function createRecord(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
-		$sql = "INSERT INTO students (id, first, last, course, account, passwd)
+		$sql = "INSERT INTO alumni (id, first, last, course, account, passwd)
 		VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 		
 		if ($this->database->query($sql) === TRUE) {
-		$output = "New student added.";
+		$output = "New alumni added.";
 		} else {
 				$output = "Error: " . $sql . "<br>" . $this->database->error;
 				}
@@ -179,35 +130,8 @@ class Database
 
 	}
 
-	function insertCourse()
-	{
-
-
-
-
-
-	}
-
-	function insertModule()
-	{
-
-
-
-
-
-	}
-
-	function insertAttendance()
-	{
-
-
-
-
-
-	}
-
 	//Function used to add rooms to the database, features are in work to calculate students enrolled and attendance.
-	function insertRoom(string $_room, int $_capacity)
+	function addRoom(string $_room, int $_capacity)
     {
 
 		$room = $_room;
@@ -229,34 +153,29 @@ class Database
     }
 
 	//Function will be used to update records individually.
-	//
-	//************************************************************
 	//TO DO: -Not used right now, may be used later at for backend.
-	//************************************************************
-	//
-	//
-	// function insertBlank(int $_id, string $_input)
-	// {
-	// 	$sql = "UPDATE alumni SET first='$_input' WHERE id='$_id'";
-		
-	// 	if ($this->database->query($sql) === TRUE) {
-	// 	$output = "New record processed.";
-	// 	} else {
-	// 			$output = "Error: " . $sql . "<br>" . $this->database->error;
-	// 			}
-
-	// 	$this->database->close();
-	// 	echo $output;
-	// }
-
-	//Function used for delete table students, exists for when table alumni
-	//needs to remade with undate field properties.
-	function dropStudents()
+	function updateRecord(int $_id, string $_input)
 	{
-		$sql = "DROP TABLE students";
+		$sql = "UPDATE alumni SET first='$_input' WHERE id='$_id'";
+		
+		if ($this->database->query($sql) === TRUE) {
+		$output = "New record processed.";
+		} else {
+				$output = "Error: " . $sql . "<br>" . $this->database->error;
+				}
+
+		$this->database->close();
+		echo $output;
+	}
+
+	//Function used for delete table alumni, exists for when table alumni
+	//needs to remade with undate field properties.
+	function deleteTable()
+	{
+		$sql = "DROP TABLE alumni";
 
 		if ($this->database->query($sql) === TRUE) {
-			$output = "Table students deleted";
+			$output = "Table alumni deleted";
 		} else {
 			$output = "Error deleting table: " . $this->database->error;
 		}

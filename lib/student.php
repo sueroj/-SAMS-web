@@ -24,7 +24,7 @@ class Student extends User
     public function addStudent()
     {
         $database = new Database();
-        $database->createRecord($this->id, $this->first, $this->last, $this->course, User::Student, $this->passwd);
+        $database->insertStudent($this->id, $this->first, $this->last, $this->course, User::Student, $this->passwd);
     }
 
     //Data input security check

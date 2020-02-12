@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-include "rooms.php";
+include "../static/rooms.php";
 
 class Configure
 {
@@ -10,7 +10,7 @@ class Configure
 		$this->database = self::connectDb();
     }
     
-    function createAlumni()
+    function createStudents()
     {	
     //Verify if database "alumni" exists in MySQL first; if not, create one.
     $sql = "CREATE DATABASE samsdb";
@@ -18,7 +18,7 @@ class Configure
         $output =  "New database samsdb created.\n";
     }
 
-    $sql = "CREATE TABLE alumni (
+    $sql = "CREATE TABLE students (
     id INT(7) UNSIGNED PRIMARY KEY,
     first VARCHAR(30) NOT NULL,
     last VARCHAR(30) NOT NULL,
@@ -28,7 +28,7 @@ class Configure
     )";
 
     if ($this->database->query($sql) === TRUE) {
-        $output = "Table alumni created successfully";
+        $output = "Table students created successfully";
     } else {
         $output = "Error creating table: " . $this->database->error;
     }
@@ -122,7 +122,7 @@ class Configure
 		return $output;
     }
 
-    /* function createStudentAttendance()
+    /* function createAttendance()
     {
     $sql = "CREATE TABLE $id (
         $module1 VARCHAR(30) PRIMARY KEY NOT NULL,

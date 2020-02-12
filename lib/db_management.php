@@ -1,7 +1,7 @@
 ﻿﻿<?php
 include "db_functions.php";
 include "db_configure.php";
-include "testUsers.php"; //test only -- delete after testing
+include "../static/testUsers.php"; //test only -- delete after testing
 
 //
 //This is the main page for the SAMS web backend environment. This page contains tools for
@@ -20,22 +20,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
 		case "configure": 
 			$output = $database->createDb();
             $output = $database->createTable();
-            $output = $configure->createAlumni();
+            $output = $configure->createStudents();
             $output = $configure->createCourses();
+            //output = $configure->createModules();
             $output = $configure->createRooms();
             //$output = $configure->createAttendance();
         break;
         case "update":
-            $output = $database->updateRecord(checkData($_POST["record"]));
+            //$output = $database->updateRecord(checkData($_POST["record"]));
         break;
         case "view":
             $record = $database->viewRecord(checkData($_POST["record"]));
         break;
         case "delete":
-            $output = $database->deleteRecord(checkData($_POST["record"]));
+            //$output = $database->removeStudent(checkData($_POST["record"]));
         break;
         case "drop":
-            $output = $database->deleteTable();
+            $output = $database->dropStudents();
         break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
