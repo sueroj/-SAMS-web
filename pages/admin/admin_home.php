@@ -1,31 +1,48 @@
 <?php
 session_start();
-include "lib_test_copy/db_functions.php";
+include "lib/db_functions.php";
+include "lib/db_configure.php";
+include "static/testUsers.php";
 
 checkDb();
 $database = new Database();
-
+$configure = new Configure();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
 	switch (checkData($_POST["selection"]))
 	{
         case "Students":
-            $output = $database->viewRecord("all");
+            $output = $database->getData("students");
+        break;
+        case "Courses":
+            $output = $database->getData("courses");
+        break;
+        case "Modules":
+            $output = $database->getData("modules");
+        break;
+        case "Attendance":
+            $output = $database->getData("attendance");
+        break;
+        case "Rooms":
+            $output = $database->getData("rooms");
         break;
 		case "configure": 
 			$output = $database->createDb();
-            $output = $database->createTable();
-            $output = $configure->createAlumni();
+            $output = $configure->createStudents();
             $output = $configure->createCourses();
+            $output = $configure->createModules();
             $output = $configure->createRooms();
-            //$output = $configure->createAttendance();
+            $output = $configure->createAttendance();
         break;
-        case "update":
+        case "UpdateRooms":
+            $output = $database->updateRooms();
+        break;
+        case "insert":
             $output = $database->updateRecord(checkData($_POST["record"]));
         break;
         case "view":
-            $output = $database->viewRecord(checkData($_POST["record"]));
+            $output = $database->getData(checkData($_POST["record"]));
         break;
         case "delete":
             $output = $database->deleteRecord(checkData($_POST["record"]));
@@ -71,7 +88,7 @@ function checkData($data){
 <html lang="en-US">
 
 <head>
-    <link rel="stylesheet" type="text/css" href="/css/admin_test_styles.css">
+    <link rel="stylesheet" type="text/css" href="/css/admin_styles.css">
        <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
     <title>SAMS | Admin homepage</title>
@@ -100,13 +117,13 @@ function checkData($data){
     <div>
         <div class="input_form">
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                    <input type="text" name="record" placeholder="Enter Record">
+                    <input type="text" name="record" placeholder="Search">
                     <select name="selection">
-                        <option value="view">View Record</option>
-                        <option value="update">Update Record</option>
-                        <option value="delete">Delete Record</option>
-                        <option value="drop">Delete Table</option>
+                        <option value="view">View Data</option>
+                        <option value="insert">Insert Data</option>
+                        <option value="delete">Delete Data</option>
                         <option value="configure">Configure Database</option>
+                        <option value="UpdateRooms">Update Rooms</option>
                         
                         <option value="testUsers">Create Test Users</option>
                     </select>

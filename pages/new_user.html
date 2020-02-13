@@ -14,7 +14,7 @@
        <div class="nav_bar">Student Adminstration Management System</div>
    </nav>
    
-   <form action="/lib/create_user.php" method="POST">
+   <form action="/scripts/create_user.php" method="POST">
      <div class="textbox">
        <label for="id"><b>Student ID</b></label>
        <input type="text" placeholder="Enter Student ID" name="id" required>
@@ -26,7 +26,13 @@
        <input type="text" placeholder="Enter Last Name" name="lname" required>
 
        <label for="course"><b>Course</b></label>
-       <input type="text" placeholder="Enter Course" name="course" required>
+       <select name="course">
+         <option value="ICT">Information and Computing Technology</option>
+         <option value="CS">Computer Science</option>
+         <option value="AI">Artificial Intelligence</option>
+         <option value="SS">Sports Science</option>
+         <option value="AH">Animal Husbandry</option>
+       </select>
    
        <label for="psw"><b>Password</b></label>
        <input type="password" placeholder="Enter Password" name="psw" required>

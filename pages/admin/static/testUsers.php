@@ -1,5 +1,5 @@
 <?php
-include "user.php";
+include "lib/user.php";
 
 //Test Users for development purposes only. Creates 2 users for each of the 3 account types student, lecturer, admin.
 //

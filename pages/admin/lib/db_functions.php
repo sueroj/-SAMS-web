@@ -128,35 +128,115 @@ class Database
 	//Views records stored in the samsDb database -> students table
 	//So far, only recieves user input for searching by ID # and the
 	//debug command "all" records, which lists all records.
-	function viewRecord(string $_input)
+	function getData(string $_input)
 	{
 		$output = null;
 
 		switch ($_input)
 		{
-			case "all":
+			case "students":
 			$sql = "SELECT * FROM students ORDER BY id";
 			$result = $this->database->query($sql);
+			$columns = array("id", "first", "last", "course", "passwd");
+			break;
+			case "courses":
+			$sql = "SELECT * FROM courses ORDER BY course";
+			$result = $this->database->query($sql);
+			$columns = array("course", "enrolled", "attendance", "start_date", "end_date", "weeks");
+			break;
+			case "modules":
+			$sql = "SELECT * FROM modules ORDER BY module";
+			$result = $this->database->query($sql);
+			$columns = array("module", "course", "room", "lectureDay", "time", "start_date", "end_date", "attendance", "enrolled",  "weeks");
+			break;
+			case "attendance":
+			$sql = "SELECT * FROM attendance ORDER BY id";
+			$result = $this->database->query($sql);
+			$columns = array("record", "id", "module", "room");
 			break;
 			case "rooms":
 			$sql = "SELECT * FROM rooms ORDER BY room";
 			$result = $this->database->query($sql);
+			$columns = array("room", "attendance", "enrolled", "capacity");
 			break;
 			default:
 			$sql = "SELECT * FROM students WHERE id='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
+			$columns = array("id", "first", "last", "course", "passwd");
 		}
 
-
 		if ($result->num_rows > 0) {
-			// output data of each row
-			while($row = $result->fetch_assoc()) {
-				$output .= "<tr><td>" . $row["id"] . "</td>".
-						"<td>" . $row["first"] . "</td>".
-						"<td>" . $row["last"] . "</td>".
-						"<td>" . $row["course"] . "</td>".
-						"<td>" . $row["passwd"] . "</td></tr>";
+			switch (count($columns))
+			{
+				case 4:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td></tr>";
+					}
+				break;
+				case 5:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td>".
+					"<td>" . $row[$columns[4]] . "</td></tr>";
+					}
+				break;
+				case 6:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td>".
+					"<td>" . $row[$columns[4]] . "</td>".
+					"<td>" . $row[$columns[5]] . "</td></tr>";
+					}
+				break;
+				case 7:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td>".
+					"<td>" . $row[$columns[4]] . "</td>".
+					"<td>" . $row[$columns[5]] . "</td>".
+					"<td>" . $row[$columns[6]] . "</td></tr>";
+					}
+				break;
+				case 11:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td>".
+					"<td>" . $row[$columns[4]] . "</td>".
+					"<td>" . $row[$columns[5]] . "</td>".
+					"<td>" . $row[$columns[6]] . "</td>".
+					"<td>" . $row[$columns[7]] . "</td>".
+					"<td>" . $row[$columns[8]] . "</td>".
+					"<td>" . $row[$columns[9]] . "</td>".
+					"<td>" . $row[$columns[10]] . "</td>";
+					}
+				break;
+				default:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td>".
+					"<td>" . $row[$columns[3]] . "</td>".
+					"<td>" . $row[$columns[4]] . "</td></tr>";
+					}
 			}
+
 		} else {
 			$output = "0 results";
 		}
@@ -168,15 +248,27 @@ class Database
 	{
 		$sql = "INSERT INTO students (id, first, last, course, account, passwd)
 		VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
-		
-		if ($this->database->query($sql) === TRUE) {
-		$output = "New student added.";
-		} else {
-				$output = "Error: " . $sql . "<br>" . $this->database->error;
-				}
-		
-		return $output;
+		$this->database->query($sql);
 
+		$sql = "SELECT module FROM modules WHERE course='$_course'";
+		$result = $this->database->query($sql);
+
+		if ($result->num_rows > 0) {		
+			while($row = $result->fetch_assoc())
+			{
+				$module = $row["module"];
+				$sql = "INSERT INTO attendance (id, module) VALUES ('$_id', '$module')";
+				$this->database->query($sql);
+			}
+		}
+		
+		if ($this->database->error !== "") {
+		echo $this->database->error;
+		} else {
+				echo "New student added";
+				}
+
+		//self::calcEnrolled();
 	}
 
 	function insertCourse()
@@ -251,6 +343,31 @@ class Database
 
 	//Function used for delete table students, exists for when table alumni
 	//needs to remade with undate field properties.
+
+	//Update room check. If modules.room contains a room, copy that room to attendance.room
+	function UpdateRooms()
+	{
+		$sql = "SELECT room, module FROM modules";
+		$result = $this->database->query($sql);
+
+		if ($result->num_rows > 0) {		
+			while($row = $result->fetch_assoc())
+			{
+				$room = $row["room"];
+				$module = $row["module"];
+				$sql = "UPDATE attendance SET room='$room' WHERE module='$module'";
+				$this->database->query($sql);
+			}
+		}
+		
+		if ($this->database->error !== "") {
+		$output = $this->database->error;
+		} else {
+				$output = "Rooms updated";
+				}
+		return $output;
+	}
+
 	function dropStudents()
 	{
 		$sql = "DROP TABLE students";
@@ -280,6 +397,50 @@ class Database
 		}
 		return $output;
 	}
+
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++
+	//					IN WORK
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+	// private function calcEnrolled()
+	// {
+	// 	$sql = "SELECT code FROM courses";
+	// 	$result = $this->database->query($sql);
+	// 	$code = $result->fetch_array(MYSQLI_NUM);
+
+	// 	$sql = "SELECT course FROM students";
+	// 	$result = $this->database->query($sql);
+	// 	$course = $result->fetch_array(MYSQLI_NUM);
+
+	// 	for($x=0; $x<count($code); $x++)
+	// 	{
+	// 		$enrolled = 0;
+	// 		for($y=0; $y<count($course); $y++)
+	// 		{
+	// 			if($course[$y] == $code[$x])
+	// 			{ $enrolled++; }
+	// 			$sql = "UPDATE courses SET enrolled='$enrolled' WHERE code='$code[$x]'";
+	// 			$this->database->query($sql);
+	// 		}
+	// 	}
+
+	// 	// if ($result->num_rows > 0) {		
+	// 	// 	while($row = $result->fetch_assoc())
+	// 	// 	{
+	// 	// 		$module = $row["module"];
+	// 	// 		$sql = "INSERT INTO attendance (id, module) VALUES ('$_id', '$module')";
+	// 	// 		$this->database->query($sql);
+	// 	// 	}
+	// 	// }
+		
+	// 	if ($this->database->error !== "") {
+	// 	echo $this->database->error;
+	// 	} else {
+	// 			echo "Student enrollment updated.";
+	// 			}
+	// }
 
 	//Connect to Database, used by many other functions.
     private function connectDb()

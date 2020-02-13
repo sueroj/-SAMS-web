@@ -1,7 +1,7 @@
 <?php
 session_start();
-include "lib/db_functions.php";
-include "lib/user.php";
+include "pages/admin/lib/db_functions.php";
+include "scripts/user.php";
 
 //Session "checker": Checks if user is already logged into the system,
 //automatically proceeds to directory.php if the user is logged in.
