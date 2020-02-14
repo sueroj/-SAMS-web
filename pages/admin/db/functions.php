@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-include "globals.php";
+//include "globals.php";
 
 //
 //db_functions contains most, if not, all of the functions intended to be used 
@@ -20,14 +20,19 @@ class Database
 		$this->database = self::connectDb();
 	}
 
+	function __deconstruct()
+	{
+		$this->database->close();
+	}
+
 	//Function used to verify username and password id and password is checked against the DB,
 	//if authenticated, a session is started and user is redirected from login page to their
 	//respective homepage.
-    function verifyAccount(int $_id, string $_passwd)
+    function verifyAccount(int $_studentId, string $_passwd)
 	{
 		$field = null;
 
-		$sql = "SELECT id, account, first, last, passwd FROM alumni WHERE id='$_id'";
+		$sql = "SELECT * FROM students WHERE studentId='$_studentId'";
 		$result = $this->database->query($sql);
 
 		$field = $result->fetch_array(MYSQLI_ASSOC);
@@ -35,18 +40,19 @@ class Database
 			if (md5($_passwd) == $field["passwd"]){
 				session_start();
 				$_SESSION["loggedin"] = true;
-				$_SESSION["id"] = $_id;
+				$_SESSION["studentId"] = $_id;
 				$_SESSION["first"] = $field["first"];
 				$_SESSION["last"] = $field["last"];
+				$_SESSION["course"] = $field["course"];
 				$_SESSION["account"] = $field["account"];
 				$this->database->close();
-				return 1;
+				return true;
 			} else {
 				$this->database->close();
-				return 0;
+				return false;
 				}
 		} else{
-			return 0;
+			return false;
 		}
 	}
 
@@ -137,37 +143,45 @@ class Database
 			case "students":
 			$sql = "SELECT * FROM students ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("id", "first", "last", "course", "passwd");
+			$columns = array("studentId", "first", "last", "course", "account", "passwd");
 			break;
 			case "courses":
-			$sql = "SELECT * FROM courses ORDER BY course";
+			$sql = "SELECT * FROM courses ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("course", "enrolled", "attendance", "start_date", "end_date", "weeks");
+			$columns = array("code", "name", "start_date", "end_date");
 			break;
 			case "modules":
-			$sql = "SELECT * FROM modules ORDER BY module";
+			$sql = "SELECT * FROM modules ORDER BY code";
 			$result = $this->database->query($sql);
-			$columns = array("module", "course", "room", "lectureDay", "time", "start_date", "end_date", "attendance", "enrolled",  "weeks");
+			$columns = array("code", "name", "course", "weeks");
 			break;
 			case "attendance":
 			$sql = "SELECT * FROM attendance ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("record", "id", "module", "room");
+			$columns = array("LectureId", "studentId", "attended");
 			break;
 			case "rooms":
 			$sql = "SELECT * FROM rooms ORDER BY room";
 			$result = $this->database->query($sql);
-			$columns = array("room", "attendance", "enrolled", "capacity");
+			$columns = array("room", "fill", "capacity");
 			break;
 			default:
 			$sql = "SELECT * FROM students WHERE id='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("id", "first", "last", "course", "passwd");
+			$columns = array("studentId", "first", "last", "course");
 		}
 
 		if ($result->num_rows > 0) {
 			switch (count($columns))
 			{
+				case 3:
+					// output data of each row
+					while($row = $result->fetch_assoc()) {
+					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
+					"<td>" . $row[$columns[1]] . "</td>".
+					"<td>" . $row[$columns[2]] . "</td></tr>";
+					}
+				break;
 				case 4:
 					// output data of each row
 					while($row = $result->fetch_assoc()) {
@@ -246,29 +260,15 @@ class Database
 	//Main function used for create new records.
 	function insertStudent(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
-		$sql = "INSERT INTO students (id, first, last, course, account, passwd)
+		$sql = "INSERT INTO students (studentId, first, last, course, account, passwd)
 		VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 		$this->database->query($sql);
-
-		$sql = "SELECT module FROM modules WHERE course='$_course'";
-		$result = $this->database->query($sql);
-
-		if ($result->num_rows > 0) {		
-			while($row = $result->fetch_assoc())
-			{
-				$module = $row["module"];
-				$sql = "INSERT INTO attendance (id, module) VALUES ('$_id', '$module')";
-				$this->database->query($sql);
-			}
-		}
 		
 		if ($this->database->error !== "") {
-		echo $this->database->error;
+		echo $this->database->error . "<br>";
 		} else {
-				echo "New student added";
+				echo "New student added<br>";
 				}
-
-		//self::calcEnrolled();
 	}
 
 	function insertCourse()

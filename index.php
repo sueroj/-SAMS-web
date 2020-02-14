@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "pages/admin/lib/db_functions.php";
+include "pages/admin/db/functions.php";
 include "scripts/user.php";
 
 //Session "checker": Checks if user is already logged into the system,
@@ -14,6 +14,8 @@ include "scripts/user.php";
 
 $user = $passwd = "";
 $error = null;
+
+checkDb();
 
 //Username/password verification, send to directory.php if okay.
 if($_SERVER["REQUEST_METHOD"] == "POST")
@@ -59,6 +61,20 @@ $data = stripslashes($data);
 $data = htmlspecialchars($data);
 return $data;
 }
+
+function checkDb()
+{
+    $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+    if ($database->connect_error){
+        die("Connection failed: " . $database->connect_error);	
+    }
+
+    //Create or verify DB exists
+    $sql = "CREATE DATABASE samsdb";
+    if ($database->query($sql) === TRUE){
+        $output = "database samsdb created.";
+	}
+}
 ?>
 
 <!DOCTYPE html>
@@ -85,11 +101,13 @@ return $data;
 	    <input type="password" placeholder="Enter Password" name="passwd" required>
 	    
 		<label class="password"><a href="pages/new_user.html">New User?</a></label>
+		
 		<label class="test"><?php echo $error; ?></label>
 	    <button type="submit" class="button">Login</button>
 	    
 	  </div>
 	</form>
+	<a href="pages/admin/db/initial_configure.php">Initial Config</a>
 
 </body>
 </html>

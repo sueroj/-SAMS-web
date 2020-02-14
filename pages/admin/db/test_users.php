@@ -1,5 +1,6 @@
 <?php
-include "lib/user.php";
+//include "db/functions.php";
+include "user.php";
 
 //Test Users for development purposes only. Creates 2 users for each of the 3 account types student, lecturer, admin.
 //
@@ -54,7 +55,7 @@ class TestUsers
     $passwd = "abcd";
     $database->insertStudent($id, $first, $last, $course, User::Admin, $passwd);
 
-    return "Test Users created. Use view records to view information.";
+    return "Test users added. Use view data to view information.";
     }
 }
 

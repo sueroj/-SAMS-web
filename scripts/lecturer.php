@@ -1,5 +1,5 @@
 <?php declare(strict_types=1);
-include "db_functions.php";
+include "../pages/admin/db/functions.php";
 include "user.php";
 
 class Lecturer extends User

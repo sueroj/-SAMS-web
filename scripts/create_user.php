@@ -4,7 +4,7 @@ include "student.php";
 //Gather input to create objects from Student Class
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-    $id = (int)$_POST["id"];
+    $id = (int)$_POST["sid"];
     $first = $_POST["fname"];
     $last = $_POST["lname"];
     $course = $_POST["course"];

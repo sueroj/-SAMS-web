@@ -31,9 +31,6 @@ class Courses
                             );
     
     const courseCode = array("ICT", "CS", "AI", "SS", "AH");
-
-    //Course weeks for testing/debug. May be removed as application continues development.
-    const courseWeeks = array(40, 40, 40, 32, 18);
 }
 
 

@@ -1,12 +1,16 @@
 <?php
 session_start();
-include "lib/db_functions.php";
-include "lib/db_configure.php";
-include "static/testUsers.php";
+include "db/functions.php";
+include "db/configure.php";
+include "db/test_users.php";
 
 checkDb();
 $database = new Database();
 $configure = new Configure();
+
+$output = "";
+$store = array();
+$x = 0;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
@@ -28,12 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output = $database->getData("rooms");
         break;
 		case "configure": 
-			$output = $database->createDb();
-            $output = $configure->createStudents();
-            $output = $configure->createCourses();
-            $output = $configure->createModules();
-            $output = $configure->createRooms();
-            $output = $configure->createAttendance();
+            $output = $database->createDb()."<br>";
+            $output .= $configure->createAttendance()."<br>";
+            $output .= $configure->createLectures()."<br>";
+            $output .= $configure->createModules()."<br>";
+            $output .= $configure->createCourses()."<br>";
+            $output .= $configure->createRooms()."<br>";
+            $output .= $configure->createStudents()."<br>";
+            $output .= $configure->createLecturers()."<br>";
+            $output .= $configure->createAdmins();
         break;
         case "UpdateRooms":
             $output = $database->updateRooms();
