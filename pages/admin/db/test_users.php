@@ -64,43 +64,26 @@ class TestUsers
         return $output;
     }
     
-    function randomAttendanceGenerator5000v2_0()
+    function generateAttendance()
     {
-        // $openDb = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD, Globals::SERVER_DB);
-		// if ($openDb->connect_error){
-		// 	die("Connection failed: " . $openDb->connect_error);
-        // }
+        $openDb = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD, Globals::SERVER_DB);
+		if ($openDb->connect_error){
+			die("Connection failed: " . $openDb->connect_error);
+        }
         
-        // $database = new Database();
-        // $rand = rand(1,100);
+        $database = new Database();
 
-        // $sql = "SELECT * FROM attendance";
-        // $result = $openDb->query($sql);                          STOPPED HERE
+        $sql = "SELECT lectureId, studentId FROM attendance";
+        $result = $openDb->query($sql);    
 
-        // if($result->num_rows > 0)
-        // {
-        //     if ($result->num_rows > 0)
-        //     {
-        //         while($row = $result->fetch_array(MYSQLI_NUM)) 
-        //         {
-        //             $studentCount = $row[0];
-        //             $room = $row[2];
-    
-        //             $sql = "UPDATE roomCapacity SET scheduled='$studentCount'
-        //             WHERE room='$room'";
-        //             $this->database->query($sql);
-        //         }
-        //     }
-        //     while($row = $result->fetch_assoc())
-        //     {
-        //         if ($rand < 50)
-        //         {
-        //             $newAttendance=0;
-        //         } else { $newAttendance = 1; }
-        //         $database->updateAttendance($row["lectureId"], $row["studentId"], $newAttendance);
-        //     }
-        // }
-        // $openDb->close();
+        if ($result->num_rows > 0)
+        {
+            while($row = $result->fetch_assoc()) 
+            {
+                $database->updateAttendance($row["lectureId"], $row["studentId"], rand(0,1));
+            }
+        }
+        $openDb->close();
     }
 }
 

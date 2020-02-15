@@ -31,7 +31,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         break;
         case "Rooms":
             $output = $database->updateRoomCapacity();
-            //$output = $database->getData("roomCapacity");
+            $output = $database->updateRoomFill();
+            $output = $database->getData("roomCapacity");
         break;
 		case "configure": 
             $output = $database->createDb()."<br>";
@@ -61,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output = TestUsers::addUsers();
         break;
         case "testAttendance":           //Test Attendance for development purposes only
-            $output = TestUsers::randomAttendanceGenerator5000v2_0();
+            $output = TestUsers::generateAttendance();
         break;
 		default:
 			$output = "Invalid option.";
@@ -121,6 +122,7 @@ function checkData($data){
             <input class="v_nav" name="selection" type="submit" value="Modules">
             <input class="v_nav" name="selection" type="submit" value="Attendance">
             <input class="v_nav" name="selection" type="submit" value="Rooms">
+            <input class="v_nav" name="selection" type="submit" value="Alerts">
         </form>
     </nav>
 
@@ -135,7 +137,7 @@ function checkData($data){
                         <option value="configure">Configure Database</option>
                         
                         <option value="testUsers">Create Test Users</option>
-                        <option value="testAttendance">Test Attendance</option>
+                        <option value="testAttendance">Generate Attendance</option>
                     </select>
                     <button class="submit_btn" type="submit">Submit</button>
             </form>

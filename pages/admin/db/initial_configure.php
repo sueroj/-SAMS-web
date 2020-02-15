@@ -16,5 +16,6 @@ echo $configure->createLecturers() . "<br>";
 echo $configure->createAdmins() . "<br>";
 
 echo TestUsers::addUsers();
+echo TestUsers::generateAttendance();
 
 ?>

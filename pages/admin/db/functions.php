@@ -308,8 +308,6 @@ class Database
     {
 
 		$room = $_room;
-		$attendance = null;         //temporary
-		$enrolled = null;           //temporary
 		$capacity = $_capacity;
 
 		$sql = "INSERT INTO rooms (room, attendance, enrolled, capacity)
@@ -325,8 +323,34 @@ class Database
 		return $output;
     }
 
-	//Function used for delete table students, exists for when table alumni
-	//needs to remade with undate field properties.
+	function updateRoomFill()
+	{
+
+		$sql = "SELECT SUM(attended), lectureId, room FROM attendance
+		GROUP BY lectureId";
+		$result = $this->database->query($sql);
+
+		if ($result->num_rows > 0)
+		{
+			while($row = $result->fetch_array(MYSQLI_NUM)) 
+			{
+				$newAttended = $row[0];
+				$room = $row[2];
+
+				$sql = "UPDATE roomCapacity SET fill='$newAttended'
+				WHERE room='$room'";
+				$this->database->query($sql);
+			}
+		}
+
+		
+		if ($this->database->error !== "") {
+		$output = $this->database->error;
+		} else {
+				$output = "Rooms updated";
+				}
+		return $output;
+	}
 
 	//Update room check. If modules.room contains a room, copy that room to attendance.room
 	function updateRoomCapacity()
