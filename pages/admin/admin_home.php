@@ -1,8 +1,8 @@
 <?php
 session_start();
-include "db/functions.php";
-include "db/configure.php";
-include "db/test_users.php";
+include_once "db/functions.php";
+include_once "db/configure.php";
+include_once "db/test_users.php";
 
 checkDb();
 $database = new Database();
@@ -26,10 +26,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output = $database->getData("modules");
         break;
         case "Attendance":
+            $output = $database->insertAttendance();
             $output = $database->getData("attendance");
         break;
         case "Rooms":
-            $output = $database->getData("rooms");
+            $output = $database->updateRoomCapacity();
+            //$output = $database->getData("roomCapacity");
         break;
 		case "configure": 
             $output = $database->createDb()."<br>";
@@ -38,12 +40,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output .= $configure->createModules()."<br>";
             $output .= $configure->createCourses()."<br>";
             $output .= $configure->createRooms()."<br>";
+            $output .= $configure->createRoomCapacity()."<br>";
             $output .= $configure->createStudents()."<br>";
             $output .= $configure->createLecturers()."<br>";
             $output .= $configure->createAdmins();
-        break;
-        case "UpdateRooms":
-            $output = $database->updateRooms();
         break;
         case "insert":
             $output = $database->updateRecord(checkData($_POST["record"]));
@@ -59,6 +59,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
+        break;
+        case "testAttendance":           //Test Attendance for development purposes only
+            $output = TestUsers::randomAttendanceGenerator5000v2_0();
         break;
 		default:
 			$output = "Invalid option.";
@@ -127,12 +130,12 @@ function checkData($data){
                     <input type="text" name="record" placeholder="Search">
                     <select name="selection">
                         <option value="view">View Data</option>
-                        <option value="insert">Insert Data</option>
-                        <option value="delete">Delete Data</option>
+                   <!--     <option value="insert">Insert Data</option> -->
+                   <!--     <option value="delete">Delete Data</option> -->
                         <option value="configure">Configure Database</option>
-                        <option value="UpdateRooms">Update Rooms</option>
                         
                         <option value="testUsers">Create Test Users</option>
+                        <option value="testAttendance">Test Attendance</option>
                     </select>
                     <button class="submit_btn" type="submit">Submit</button>
             </form>

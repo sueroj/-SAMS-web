@@ -119,6 +119,7 @@ select:hover, button:hover {
     width: 1000px;
     height: 500px;
     background-color: white;
+    font-size: 12px;
 }
 
 
