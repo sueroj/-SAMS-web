@@ -6,8 +6,6 @@ class Student extends User
 {
     private $course;
 
-    private $module;
-
     private $attended;
 
     private $passwd;

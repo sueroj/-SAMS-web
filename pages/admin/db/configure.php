@@ -7,36 +7,46 @@ class Configure
 {
     private $database;
 
+    //Constructor connected class Database to the samsdb database.
 	function __construct()
 	{
 		$this->database = self::connectDb();
     }
 
+    //Deconstructor for closing database connection.
     function __deconstruct()
 	{
 		$this->database->close();
     }
     
+    //Verify if database "samsdb" exists in MySQL first; if not, create one.
     function checkDb()
-    {
-        //Verify if database "samdb" exists in MySQL first; if not, create one.
+    {  
         $sql = "CREATE DATABASE samsdb";
         if ($this->database->query($sql) === TRUE){
         $output =  "New database samsdb created.\n";
         }
     }
 
+    //Create attendance table: lectureId = lectures.id
+    //                         lectureCode = lectures.date . lectures.moduleCode
+    //                         moduleId = lectures.moduleCode . lectures.trimester
+    //                         attended = 12-character string; stores attendance record for a module when split.
+    //                              Each character represents a different week.
+    //                         percentAttended = attended / week * 100.
     function createAttendance()
-    {//Attendance = 12 character string that will represent true or false.
+    {
 
         $sql = "CREATE TABLE attendance (
         id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        lectureId VARCHAR(30) NOT NULL,
-        week INT(7),
+        lectureId INT(6) NOT NULL,
+        lectureCode VARCHAR(30) NOT NULL,
+        moduleId VARCHAR(30) NOT NULL,
         room VARCHAR(10),
         studentId VARCHAR(10) NOT NULL,
-        attended BOOL,
-        CONSTRAINT UC_AttendanceRecord UNIQUE (lectureId, week, studentId)
+        attended VARCHAR(12) NOT NULL DEFAULT '000000000000',
+        percentAttended DOUBLE(4,2),
+        CONSTRAINT UC_AttendanceRecord UNIQUE (lectureId, studentId)
         )";
         $this->database->query($sql);
 
@@ -48,6 +58,7 @@ class Configure
         return $output;
     }
 
+    //Create Lectures table
     function createLectures()
     {
         $dbFunctions = new Database();
@@ -59,6 +70,7 @@ class Configure
         start_time INT(4) UNSIGNED,
         stop_time INT(4) UNSIGNED,
         week INT(3) UNSIGNED,
+        trimester ENUM('TRI1', 'TRI2', 'TRI3') NOT NULL,
         lecturer VARCHAR(30),
         room VARCHAR(10),
         CONSTRAINT UC_Lecture UNIQUE (date, moduleCode)
@@ -75,7 +87,7 @@ class Configure
 
         for ($x=0; $x<count($lectureDate); $x++)
         {
-            $dbFunctions->insertLecture($lectureDate[$x], $lectureModule[$x], $lectureTime[$x], $lectureStop[$x], $lectureWeek[$x], $lecturerId[$x], $lectureRoom[$x]);
+            $dbFunctions->insertLecture($lectureDate[$x], $lectureModule[$x], $lectureTime[$x], $lectureStop[$x], $lectureWeek[$x], 1, $lecturerId[$x], $lectureRoom[$x]);
         }
 
         if ($this->database->error !== "") {
@@ -86,8 +98,9 @@ class Configure
         return $output;
     }
 
+    //Create modules table
     function createModules()
-    { //Lecture = DayofWeek SQL: DAYOFWEEK(date)
+    {
     $sql = "CREATE TABLE modules (
         id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         moduleCode VARCHAR(7),
@@ -118,6 +131,7 @@ class Configure
         return $output;
     }
 
+    //Create courses table.
     function createCourses()
     {
     $sql = "CREATE TABLE courses (
@@ -148,6 +162,7 @@ class Configure
         return $output;
     }
 
+    //Create rooms table.
     function createRooms()
     {
         $sql = "CREATE TABLE rooms (
@@ -178,6 +193,7 @@ class Configure
         return $output;
     }
 
+    //Create roomsCapacity table. Tentative. May be combined with rooms table.
     function createRoomCapacity()
     {
         $sql = "CREATE TABLE roomCapacity (
@@ -199,6 +215,7 @@ class Configure
         return $output;
     }
     
+    //Create students table.
     function createStudents()
     {	
         $sql = "CREATE TABLE students (
@@ -220,6 +237,7 @@ class Configure
         return $output;
     }
 
+    //Create Lecturers table.
     function createLecturers()
     {	
         $sql = "CREATE TABLE lecturers (
@@ -240,6 +258,7 @@ class Configure
         return $output;
     }
 
+    //Create Admins table.
     function createAdmins()
     {	
         $sql = "CREATE TABLE admins (
@@ -260,7 +279,7 @@ class Configure
         return $output;
     }
 
-    //Connect to Database, used by many other functions.
+    //Connect to Database.
     function connectDb()
     {
         $conn = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD, Globals::SERVER_DB);

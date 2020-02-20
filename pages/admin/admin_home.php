@@ -26,13 +26,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output = $database->getData("modules");
         break;
         case "Attendance":
-            $output = $database->insertAttendance();
+            $database->insertAttendance();
             $output = $database->getData("attendance");
         break;
+        case "Alerts":
+            $output = $database->getData("alerts");
+        break;
         case "Rooms":
-            $output = $database->updateRoomCapacity();
-            $output = $database->updateRoomFill();
-            $output = $database->getData("roomCapacity");
+            $output = $database->updateRoomCapacity()."<br>";
+            $output .= $database->updateRoomFill()."<br>";
+            $output .= $database->getData("roomCapacity");
         break;
 		case "configure": 
             $output = $database->createDb()."<br>";
@@ -44,7 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output .= $configure->createRoomCapacity()."<br>";
             $output .= $configure->createStudents()."<br>";
             $output .= $configure->createLecturers()."<br>";
-            $output .= $configure->createAdmins();
+            $output .= $configure->createAdmins()."<br>";
+            $output .= $database->insertAttendance();
         break;
         case "insert":
             $output = $database->updateRecord(checkData($_POST["record"]));
@@ -60,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
+            $database->insertAttendance();
         break;
         case "testAttendance":           //Test Attendance for development purposes only
             $output = TestUsers::generateAttendance();
@@ -103,9 +108,25 @@ function checkData($data){
        <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
     <title>SAMS | Admin homepage</title>
+
+    <script>
+        function getAlerts() 
+        {
+            var pulser = document.getElementById("pulser_button");
+            var xhttp = new XMLHttpRequest();
+
+            xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                pulser.style.display = this.responseText;
+            }
+            };
+            xhttp.open("GET", "get_alerts.php?t=" + Math.random(), true);
+            xhttp.send();
+        } 
+    </script>
 </head>
     
-<body>
+<body onload="getAlerts()">
     
 <nav class="global_nav_bar">
     <div class="logo" title="Return to Home Page"><a href="/HTML/Admin/Admin%20homepage.html">SAMS</a></div>
@@ -122,7 +143,7 @@ function checkData($data){
             <input class="v_nav" name="selection" type="submit" value="Modules">
             <input class="v_nav" name="selection" type="submit" value="Attendance">
             <input class="v_nav" name="selection" type="submit" value="Rooms">
-            <input class="v_nav" name="selection" type="submit" value="Alerts">
+            <input class="v_nav_pulser" id="pulser_button" name="selection" type="submit" value="Alerts" hidden>
         </form>
     </nav>
 
@@ -143,7 +164,7 @@ function checkData($data){
             </form>
         </div>
 
-        <div class="data">
+        <div id="data" class="data">
             <table>
 
             <?php echo $output; ?>
@@ -161,6 +182,7 @@ function checkData($data){
         die("Connection failed: " . $conn->connect_error);
         } else { echo "Database Status: Connected. ";}
 ?>
-    
+
 </body>
 </html>
+

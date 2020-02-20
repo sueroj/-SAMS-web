@@ -29,21 +29,13 @@ class StaticData
     
     const courseCode = array("ICT", "CS", "AI", "SS", "AH");
 
-    //function newLecture(){
-    //random = new Random();
-    //
-    // Function for random new lectures here for generating Attendance charts. //
-    //
-    //
-    //}
-
-    const lectureDate = array("2020-02-25","2020-02-26","2020-02-25","2020-03-11","2020-03-03", "2020-04-01", "2020-03-04");
-    const lectureModule = array("CSS", "DWA", "SI", "RM", "CS","SS","RM");
-    const lectureTime = array(1000, 1100, 900, 1300, 1200, 1300, 900);
-    const lectureStop = array(1200, 1300, 1000, 1400, 1500, 1400, 1000);
-    const lectureWeek = array(1, 1, 1, 2, 3, 1, 2);
-    const lecturerId = array(1862002, 1662342, 1867542, 1991111, 1566302, 1934333, 1722233);
-    const lectureRoom = array("LAB123", "MUM321", "COM201", "COM201", "COS123", "RUS202", "SCI303");
+    const lectureDate = array("2020-02-25","2020-02-26","2020-02-25","2020-03-01","2020-02-25", "2020-03-01");
+    const lectureModule = array("CSS", "DWA", "SI", "RM", "CS","SS");
+    const lectureTime = array(1000, 1100, 900, 1300, 1200, 1300);
+    const lectureStop = array(1200, 1300, 1000, 1400, 1500, 1400);
+    const lectureWeek = array(1, 1, 1, 1, 1, 1, 2, 3);
+    const lecturerId = array(1862002, 1662342, 1867542, 1991111, 1566302, 1934333);
+    const lectureRoom = array("LAB123", "MUM321", "COM201", "COM201", "COS123", "RUS202");
 
 
 

@@ -14,11 +14,13 @@ class Database
 {	
 	private $database;
 
+	//Constructor connected class Database to the samsdb database.
 	function __construct()
 	{
 		$this->database = self::connectDb();
 	}
 
+	//Deconstructor for closing database connection.
 	function __deconstruct()
 	{
 		$this->database->close();
@@ -133,7 +135,13 @@ class Database
 			case "attendance":
 			$sql = "SELECT * FROM attendance ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("lectureId", "room", "studentId", "attended");
+			$columns = array("lectureCode", "room", "studentId", "attended");
+			break;
+			case "alerts":
+			$sql = "SELECT * FROM attendance WHERE percentAttended < 50
+					ORDER BY id";
+			$result = $this->database->query($sql);
+			$columns = array("lectureCode", "studentId", "attended", "percentAttended");
 			break;
 			case "roomCapacity":
 			$sql = "SELECT * FROM roomCapacity ORDER BY id";
@@ -238,7 +246,7 @@ class Database
 		return $output;
 	}
 
-	//Main function used for create new records.
+	//insertStudent(): Adds a new student to the students table.
 	function insertStudent(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		$sql = "INSERT INTO students (userId, first, last, courseCode, account, passwd)
@@ -252,6 +260,8 @@ class Database
 				}
 	}
 
+	//insertUser(): Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
+	//				3 types are Student, Lecturer, or Admin.
 	function insertUser(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		switch ($_acct)
@@ -278,21 +288,13 @@ class Database
 		} else {
 				$output = "New user added<br>";
 				}
+		return $output;
 	}
-
-	function insertCourse()
+	//insertLecture(): Adds a new lecture to the lectures table.
+	function insertLecture(string $_date, string $_module, int $_time, int $_stop, int $_week, int $_trimester, int $_userId, string $_room)
 	{
-
-
-
-
-
-	}
-
-	function insertLecture(string $_date, string $_module, int $_time, int $_stop, int $_week, int $_userId, string $_room)
-	{
-            $sql = "INSERT INTO lectures (date, moduleCode, start_time, stop_time, week, lecturer, room)
-            VALUES ('$_date', '$_module', '$_time', '$_stop', '$_week', '$_userId', '$_room')";
+            $sql = "INSERT INTO lectures (date, moduleCode, start_time, stop_time, week, trimester, lecturer, room)
+            VALUES ('$_date', '$_module', '$_time', '$_stop', '$_week', '$_trimester', '$_userId', '$_room')";
 			$this->database->query($sql);
 		
         if ($this->database->error !== "") {
@@ -303,15 +305,11 @@ class Database
         return $output;
 	}
 
-	//Function used to add rooms to the database, features are in work to calculate students enrolled and attendance.
+	//insertRoom: Adds a new room to the rooms table.
 	function insertRoom(string $_room, int $_capacity)
     {
-
-		$room = $_room;
-		$capacity = $_capacity;
-
-		$sql = "INSERT INTO rooms (room, attendance, enrolled, capacity)
-		VALUES ('$room', '$attendance', '$enrolled', '$capacity')";
+		$sql = "INSERT INTO rooms (room, capacity)
+		VALUES ('$_room', '$_capacity')";
 		$this->database->query($sql);
 		
 		if ($this->database->query($sql) === TRUE) {
@@ -323,36 +321,52 @@ class Database
 		return $output;
     }
 
+	//updateRoomFill: Contains the algorithm for calculating room Fill column, broken from latest attendance algorithm update.
 	function updateRoomFill()
-	{
+	{		//******************    BROKEN   ***********************************
+		// $sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
+		// INNER JOIN lectures ON attendance.lectureId=lectures.id
+		// GROUP BY lectureId";
+		// $result = $this->database->query($sql);
 
-		$sql = "SELECT SUM(attended), lectureId, room FROM attendance
-		GROUP BY lectureId";
-		$result = $this->database->query($sql);
+		// if ($result->num_rows > 0)
+		// {
+		// 	while($row = $result->fetch_array(MYSQLI_NUM)) 
+		// 	{
+		// 		$date = $row[0];
+		// 		$week = $row[1];
+		// 		$attendanceStr = $row[2];
+		// 		$room = $row[3];
 
-		if ($result->num_rows > 0)
-		{
-			while($row = $result->fetch_array(MYSQLI_NUM)) 
-			{
-				$newAttended = $row[0];
-				$room = $row[2];
+		// 		echo $date . $week . $attendanceStr . $room;
 
-				$sql = "UPDATE roomCapacity SET fill='$newAttended'
-				WHERE room='$room'";
-				$this->database->query($sql);
-			}
-		}
+		// 		// $attendance = str_split($attendanceStr);
+		// 		// $attendance[$_week] = $_newAttendance;
+		// 		// $updatedAttendance = $attendance[0];
+		// 		// $sumAttendance = (int)$attendance[0];
+
+		// 		// $newAttended = $row[0];
+		// 		// $room = $row[2];
+
+		// 		// $sql = "UPDATE roomCapacity SET fill='$newAttended'
+		// 		// WHERE room='$room'";
+		// 		// $this->database->query($sql);
+		// 	}
+		// }
 
 		
-		if ($this->database->error !== "") {
-		$output = $this->database->error;
-		} else {
-				$output = "Rooms updated";
-				}
-		return $output;
+		// if ($this->database->error !== "") {
+		// $output = $this->database->error;
+		// } else {
+		// 		$output = "Rooms updated";
+		// 		}
+		// return $output;
 	}
 
-	//Update room check. If modules.room contains a room, copy that room to attendance.room
+	//updateRoomCapacity: Adds rooms the roomCapacity table, with column imported from the rooms table and lectures table.
+	//					  The attendance.studentId column is counted while grouped by lectureId. The count result is equal
+	//					  to the number of students scheduled for a module lecture. This value is used to update the
+	//					  roomCapacity.scheduled column.
 	function updateRoomCapacity()
 	{
 		$sql = "INSERT INTO roomCapacity (room, date, capacity)
@@ -386,34 +400,106 @@ class Database
 		return $output;
 	}
 
-	function updateAttendance($_lectureId,  $_studentId, $_newAttendance)
+	//updateAttendance: Uses an algorithm to calculate/re-calculate attendance whenever a change is made to the
+	//					attendance table. First, the lecture.week column is checked to ensure that no attendance changes 
+	//                  can be made to weeks without lecture data (i.e. an unscheduled lecture). If a lecture is found
+	//					the 12-character attendance string is selected by lectureId and studentId. The string is split
+	//                  into an array, attendance[week], $_newAttendance updates attendance[week] for $_week.
+	//                  The 12-value long array is repackaged into a 12-character long string, $updatedAttendance, and written into the
+	//					original lectureId and studentId location. Meanwhile, the sum of the string is stored in $sumAttendance.
+	//					$sumAttendance is divided by the lecture week * 100. This value equals the percentage of lectures that
+	//					a student has attended. This value, $percentAttended, is used to update the attendance.percentAttendance column.
+	function updateAttendance(string $_lectureId, int $_studentId, int $_week, string $_newAttendance)
 	{
-		$sql = "UPDATE attendance SET attended=$_newAttendance
-				WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-		$this->database->query($sql);
+		$sql = "SELECT lectures.week FROM attendance
+		INNER JOIN lectures ON attendance.lectureId=lectures.id
+		WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
+		$verifyWeek = $this->database->query($sql)->fetch_array(MYSQLI_NUM);
 
-		if ($this->database->error !== "") {
-			$output = $this->database->error;
-			} else {
-					$output = "Attendance updated.";
-					}
-			return $output;
+		if ($_week < $verifyWeek[0])
+		{
+			$sql = "SELECT attended FROM attendance
+			WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
+			$result = $this->database->query($sql);
+			$attendanceStr = $result->fetch_array(MYSQLI_NUM);
+			$attendanceStr = $attendanceStr[0];
+			
+			if($result->num_rows > 0)
+			{
+				$attendance = str_split($attendanceStr);
+				$attendance[$_week] = $_newAttendance;
+				$updatedAttendance = $attendance[0];
+				$sumAttendance = (int)$attendance[0];
+
+				for ($x=1; $x<count($attendance); $x++)
+				{
+					$updatedAttendance .= $attendance[$x];
+					$sumAttendance += $attendance[$x];
+				}
+			}
+
+			$sql = "UPDATE attendance SET attended='$updatedAttendance'
+					WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
+			$this->database->query($sql);
+
+			$sql = "SELECT attendance.lectureId, lectures.week FROM attendance
+					INNER JOIN lectures ON attendance.lectureId=lectures.id
+					WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
+			$result = $this->database->query($sql);
+			$attendanceWeek = $result->fetch_array(MYSQLI_NUM);
+			$attendanceWeek = $attendanceWeek[1];
+
+			$percentAttended = ($sumAttendance / $attendanceWeek) * 100;
+
+			$sql = "UPDATE attendance SET percentAttended='$percentAttended'
+			WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
+			$this->database->query($sql);
+
+			if ($this->database->error !== "") {
+				$output = $this->database->error;
+				} else {
+						$output = "Attendance updated.<br>";
+						}
+				return $output;
+		} else
+			{
+				return "Invalid week entry.<br>";
+			}
+
+
 	}
 
-		
+	//insertAttendance(): Adds new Attendance records automatically into attendance table based on information from 
+	//					the lectures, students, and modules tables.
 	function insertAttendance()
 	{
-		$sql = "INSERT INTO attendance (lectureId, week, room, studentId)
-				SELECT CONCAT(date,lectures.moduleCode), week, lectures.room, students.userId FROM lectures, students, modules
+		$sql = "INSERT INTO attendance (lectureId, lectureCode, moduleId, room, studentId)
+				SELECT lectures.id, CONCAT(date,lectures.moduleCode), CONCAT(lectures.moduleCode, trimester), lectures.room, students.userId FROM lectures, students, modules
 				WHERE lectures.moduleCode = modules.moduleCode AND modules.courseCode = students.courseCode";
 				$this->database->query($sql);
-		
-		if ($this->database->error !== "") {
-		$output = $this->database->error;
-		} else {
-				$output = "Attendance updated";
-				}
-		return $output;
+	}
+
+	//getAlerts(): Used by the admin_home.php page to query the database for any attendance records < 50%.
+	//			   True: show Alert button on admin home.
+	//			   False: hide Alert button on admin home.
+	function getAlerts()
+	{
+		$setAlert = "none";
+
+		$sql = "SELECT percentAttended FROM attendance";
+		$result = $this->database->query($sql);
+
+		if($result->num_rows > 0)
+		{
+			while($row = $result->fetch_assoc()) 
+			{
+				if($row["percentAttended"] < 50)
+				{
+					$setAlert = "block";
+				} 
+			}
+		}
+		return $setAlert;
 	}
 
 	//Initial Database creation.
@@ -434,7 +520,7 @@ class Database
 		return $output;
 	}
 
-	//Connect to Database, used by many other functions.
+	//Connect to Database
     private function connectDb()
 	{
 		$conn = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD, Globals::SERVER_DB);
