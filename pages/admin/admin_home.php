@@ -33,9 +33,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output = $database->getData("alerts");
         break;
         case "Rooms":
-            $output = $database->updateRoomCapacity()."<br>";
-            $output .= $database->updateRoomFill()."<br>";
-            $output .= $database->getData("roomCapacity");
+            $database->updateRoomUsage();
+            $database->updateRoomFill();
+            $output .= $database->getData("roomUsage");
         break;
 		case "configure": 
             $output = $database->createDb()."<br>";
@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output .= $configure->createModules()."<br>";
             $output .= $configure->createCourses()."<br>";
             $output .= $configure->createRooms()."<br>";
-            $output .= $configure->createRoomCapacity()."<br>";
+            $output .= $configure->createRoomUsage()."<br>";
             $output .= $configure->createStudents()."<br>";
             $output .= $configure->createLecturers()."<br>";
             $output .= $configure->createAdmins()."<br>";
@@ -64,6 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
+            $output = TestUsers::generateUsers();
             $database->insertAttendance();
         break;
         case "testAttendance":           //Test Attendance for development purposes only

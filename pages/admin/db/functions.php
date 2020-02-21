@@ -1,13 +1,12 @@
 <?php declare(strict_types=1);
 
+//functions.php:-Contains all of the database functions intended to be called by the SAMS web frontend.
+//				-Many more functions will be added as the project progresses.
 //
-//db_functions contains most, if not, all of the functions intended to be used 
-//by the SAMS web database. Many more functions will be added as the project progresses.
-//
-//TO DO:-Add deconstructor for closing the Database connection
-//		-Add anti-SQL injection security measures. Clean up returns.
-//		-Add more search/return options.
-//		-Create unique command for listing passwords.
+//TO DO: -Add deconstructor for closing the Database connection
+//		 -Add anti-SQL injection security measures. Clean up returns.
+//		 -Add more search/return options.
+//		 -Create unique command for listing passwords.
 //
 
 class Database
@@ -26,9 +25,8 @@ class Database
 		$this->database->close();
 	}
 
-	//Function used to verify username and password id and password is checked against the DB,
-	//if authenticated, a session is started and user is redirected from login page to their
-	//respective homepage.
+	//verifyAccount(): -Used to verify username and password with the database.
+	//				   -If authenticated, a session is started and the user is redirected from login page to their respective account type homepage.
     function verifyAccount(int $_userId, string $_passwd)
 	{
 		$field = null;
@@ -143,8 +141,8 @@ class Database
 			$result = $this->database->query($sql);
 			$columns = array("lectureCode", "studentId", "attended", "percentAttended");
 			break;
-			case "roomCapacity":
-			$sql = "SELECT * FROM roomCapacity ORDER BY id";
+			case "roomUsage":
+			$sql = "SELECT * FROM roomUsage ORDER BY id";
 			$result = $this->database->query($sql);
 			$columns = array("room", "date", "fill", "scheduled", "capacity");
 			break;
@@ -260,8 +258,8 @@ class Database
 				}
 	}
 
-	//insertUser(): Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
-	//				3 types are Student, Lecturer, or Admin.
+	//insertUser(): -Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
+	//				-3 types are Student, Lecturer, or Admin.
 	function insertUser(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		switch ($_acct)
@@ -321,55 +319,48 @@ class Database
 		return $output;
     }
 
-	//updateRoomFill: Contains the algorithm for calculating room Fill column, broken from latest attendance algorithm update.
+	//updateRoomFill: Contains the algorithm for calculating room Fill column.
 	function updateRoomFill()
-	{		//******************    BROKEN   ***********************************
-		// $sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
-		// INNER JOIN lectures ON attendance.lectureId=lectures.id
-		// GROUP BY lectureId";
-		// $result = $this->database->query($sql);
+	{
+		$sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
+		INNER JOIN lectures ON attendance.lectureId=lectures.id";
+		$result = $this->database->query($sql);
 
-		// if ($result->num_rows > 0)
-		// {
-		// 	while($row = $result->fetch_array(MYSQLI_NUM)) 
-		// 	{
-		// 		$date = $row[0];
-		// 		$week = $row[1];
-		// 		$attendanceStr = $row[2];
-		// 		$room = $row[3];
+		if ($result->num_rows > 0)
+		{
+			$sql = "UPDATE roomUsage SET fill=0";
+			$this->database->query($sql);
 
-		// 		echo $date . $week . $attendanceStr . $room;
+			while($row = $result->fetch_assoc()) 
+			{
+				$date = $row["date"];
+				$week = $row["week"] - 1;
+				$attendanceStr = $row["attended"];
+				$room = $row["room"];
 
-		// 		// $attendance = str_split($attendanceStr);
-		// 		// $attendance[$_week] = $_newAttendance;
-		// 		// $updatedAttendance = $attendance[0];
-		// 		// $sumAttendance = (int)$attendance[0];
+				$attendance = str_split($attendanceStr);
 
-		// 		// $newAttended = $row[0];
-		// 		// $room = $row[2];
+				if ($attendance[$week] == 1)
+				{
+					$sql = "UPDATE roomUsage SET fill=fill+1
+					WHERE room='$room' AND date='$date'";
+					$this->database->query($sql);
+				}
+			}
+		}
 
-		// 		// $sql = "UPDATE roomCapacity SET fill='$newAttended'
-		// 		// WHERE room='$room'";
-		// 		// $this->database->query($sql);
-		// 	}
-		// }
-
-		
-		// if ($this->database->error !== "") {
-		// $output = $this->database->error;
-		// } else {
-		// 		$output = "Rooms updated";
-		// 		}
-		// return $output;
+		if ($this->database->error !== "") {
+		echo $this->database->error;
+		}
 	}
 
-	//updateRoomCapacity: Adds rooms the roomCapacity table, with column imported from the rooms table and lectures table.
+	//updateroomUsage():  Adds rooms the roomUsage table, with column imported from the rooms table and lectures table.
 	//					  The attendance.studentId column is counted while grouped by lectureId. The count result is equal
 	//					  to the number of students scheduled for a module lecture. This value is used to update the
-	//					  roomCapacity.scheduled column.
-	function updateRoomCapacity()
+	//					  roomUsage.scheduled column.
+	function updateRoomUsage()
 	{
-		$sql = "INSERT INTO roomCapacity (room, date, capacity)
+		$sql = "INSERT INTO roomUsage (room, date, capacity)
 		SELECT rooms.room, lectures.date, rooms.capacity FROM lectures, rooms
 		WHERE lectures.room = rooms.room";
 		$this->database->query($sql);
@@ -385,7 +376,7 @@ class Database
 				$studentCount = $row[0];
 				$room = $row[2];
 
-				$sql = "UPDATE roomCapacity SET scheduled='$studentCount'
+				$sql = "UPDATE roomUsage SET scheduled='$studentCount'
 				WHERE room='$room'";
 				$this->database->query($sql);
 			}
@@ -393,22 +384,17 @@ class Database
 
 		
 		if ($this->database->error !== "") {
-		$output = $this->database->error;
-		} else {
-				$output = "Rooms updated";
-				}
-		return $output;
+		echo $this->database->error;
+		}
 	}
 
-	//updateAttendance: Uses an algorithm to calculate/re-calculate attendance whenever a change is made to the
-	//					attendance table. First, the lecture.week column is checked to ensure that no attendance changes 
-	//                  can be made to weeks without lecture data (i.e. an unscheduled lecture). If a lecture is found
-	//					the 12-character attendance string is selected by lectureId and studentId. The string is split
-	//                  into an array, attendance[week], $_newAttendance updates attendance[week] for $_week.
-	//                  The 12-value long array is repackaged into a 12-character long string, $updatedAttendance, and written into the
-	//					original lectureId and studentId location. Meanwhile, the sum of the string is stored in $sumAttendance.
-	//					$sumAttendance is divided by the lecture week * 100. This value equals the percentage of lectures that
-	//					a student has attended. This value, $percentAttended, is used to update the attendance.percentAttendance column.
+	//updateAttendance(): -Uses an algorithm to calculate/re-calculate attendance whenever a change is made to the attendance table. 
+	//					  -Checks lecture.week column, prevents changes to weeks without lecture data (i.e. an unscheduled lecture).
+	//					  -If lecture data is found, the 12-character attendance string is selected for lectureId and studentId.
+	//					  -The string is split into an array represented by attendance[week], value $_newAttendance updates attendance[week] for $_week.
+	//                    -The array is repackaged into a 12-character string again, named $updatedAttendance, and written into table attendance
+	//				  	  -Meanwhile, the sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
+	//				 	  -This value equals the percentage of lectures that a student has attended and used to update the attendance.percentAttendance column.
 	function updateAttendance(string $_lectureId, int $_studentId, int $_week, string $_newAttendance)
 	{
 		$sql = "SELECT lectures.week FROM attendance
@@ -479,9 +465,9 @@ class Database
 				$this->database->query($sql);
 	}
 
-	//getAlerts(): Used by the admin_home.php page to query the database for any attendance records < 50%.
-	//			   True: show Alert button on admin home.
-	//			   False: hide Alert button on admin home.
+	//getAlerts(): -Used by the admin_home.php page to query the database for any attendance records < 50%.
+	//			   -True: show Alert button on admin home.
+	//			   -False: hide Alert button on admin home.
 	function getAlerts()
 	{
 		$setAlert = "none";

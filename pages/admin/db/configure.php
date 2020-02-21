@@ -2,6 +2,10 @@
 include_once "static_data.php";
 include_once "globals.php";
 include_once "functions.php";
+// Configure.php -Used to configure the samsdb database. 
+//               -Connects to database and creates all of the tables used in the web application
+//               -Also loads initial static data used for demonstration.
+//               -Referenced by admin_home.php and initial_configure.php (via index.php <Initial Config> link).
 
 class Configure
 {
@@ -28,12 +32,11 @@ class Configure
         }
     }
 
-    //Create attendance table: lectureId = lectures.id
-    //                         lectureCode = lectures.date . lectures.moduleCode
-    //                         moduleId = lectures.moduleCode . lectures.trimester
-    //                         attended = 12-character string; stores attendance record for a module when split.
-    //                              Each character represents a different week.
-    //                         percentAttended = attended / week * 100.
+    //Create attendance table: -lectureId = lectures.id
+    //                         -lectureCode = lectures.date . lectures.moduleCode
+    //                         -moduleId = lectures.moduleCode . lectures.trimester
+    //                         -attended = 12-character string; stores attendance record for a module when split. Each character represents a different week.
+    //                         -percentAttended = attended / week * 100.
     function createAttendance()
     {
 
@@ -166,8 +169,7 @@ class Configure
     function createRooms()
     {
         $sql = "CREATE TABLE rooms (
-        id INT(7) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        room VARCHAR(10) NOT NULL UNIQUE,
+        room VARCHAR(10) NOT NULL PRIMARY KEY UNIQUE,
         capacity INT(5) UNSIGNED NOT NULL
         )";
         $this->database->query($sql);
@@ -194,9 +196,9 @@ class Configure
     }
 
     //Create roomsCapacity table. Tentative. May be combined with rooms table.
-    function createRoomCapacity()
+    function createRoomUsage()
     {
-        $sql = "CREATE TABLE roomCapacity (
+        $sql = "CREATE TABLE roomUsage (
         id INT(7) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         room VARCHAR(10) NOT NULL,
         date DATE,
@@ -210,7 +212,7 @@ class Configure
         if ($this->database->error !== "") {
             $output = $this->database->error;
             } else {
-                    $output = "Table rooms created.";
+                    $output = "Table roomUsage created.";
                     }
         return $output;
     }

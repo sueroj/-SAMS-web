@@ -29,6 +29,21 @@ class TestUsers
 
         return "Test users added. Use view data to view information.";
     }
+
+    static function generateUsers()
+    {
+        $database = new Database();
+
+        $id = 100;
+        $first = array("Jimmy", "Ryan", "Dude", "George", "Sergei", "Vincenzo", "Egan", "Juan", "Matt", "Oliver");
+        $last = array("Smith", "Petit", "Ortiz", "Sanchez", "Bernal", "Gomez", "Thomas", "Mitchell", "Bridgewood", "Lloyd");
+        $course = array("ICT", "CS", "AI", "SS", "AH");
+
+        for($x=0; $x<60; $x++)
+        {
+            $database->insertUser($id++, $first[rand(0,9)], $last[rand(0,9)], $course[rand(0,4)], User::Student, md5("abcd"));
+        }
+    }
     
     function generateAttendance()
     {

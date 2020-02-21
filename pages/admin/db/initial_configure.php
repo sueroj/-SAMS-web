@@ -12,13 +12,16 @@ echo $configure->createLectures() . "<br>";
 echo $configure->createModules() . "<br>";
 echo $configure->createCourses() . "<br>";
 echo $configure->createRooms() . "<br>";
-echo $configure->createRoomCapacity()."<br>";
+echo $configure->createRoomUsage()."<br>";
 echo $configure->createStudents() . "<br>";
 echo $configure->createLecturers() . "<br>";
 echo $configure->createAdmins() . "<br>";
 
-echo TestUsers::addUsers();
-echo $database->insertAttendance();
-echo TestUsers::generateAttendance();
+echo TestUsers::addUsers() . "<br>";
+echo $database->insertAttendance() . "<br>";
+echo TestUsers::generateAttendance() . "<br>";
+
+echo $database->updateRoomUsage() . "<br>";
+echo $database->updateRoomFill() . "<br>";
 
 ?>
