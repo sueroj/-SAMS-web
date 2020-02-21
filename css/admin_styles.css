@@ -142,6 +142,10 @@ select:hover, button:hover {
     overflow-x: hidden;
 }
 
+table {
+    width: 80%;
+    text-align: center;
+}
 
 @media screen and (max-width: 600px) {
 }

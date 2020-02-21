@@ -133,7 +133,7 @@ class Database
 			case "attendance":
 			$sql = "SELECT * FROM attendance ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("lectureCode", "room", "studentId", "attended");
+			$columns = array("lectureCode", "moduleId", "studentId", "attended", "percentAttended");
 			break;
 			case "alerts":
 			$sql = "SELECT * FROM attendance WHERE percentAttended < 50
@@ -147,9 +147,9 @@ class Database
 			$columns = array("room", "date", "fill", "scheduled", "capacity");
 			break;
 			default:
-			$sql = "SELECT * FROM students WHERE id='$_input' ORDER BY id";
+			$sql = "SELECT * FROM attendance WHERE studentId='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("userId", "first", "last", "course");
+			$columns = array("lectureCode", "moduleId", "studentId", "attended");
 		}
 
 		if ($result->num_rows > 0) {
@@ -172,10 +172,10 @@ class Database
 				case 4:
 					// output data of each row
 					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td></tr>";
+					$output .="<tr><td>" . $row[$columns[0]] . "</td>".
+								"<td>" . $row[$columns[1]] . "</td>".
+								"<td>" . $row[$columns[2]] . "</td>".
+								"<td>" . $row[$columns[3]] . "</td></tr>";
 					}
 				break;
 				case 5:
@@ -245,10 +245,10 @@ class Database
 	}
 
 	//insertStudent(): Adds a new student to the students table.
-	function insertStudent(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
+	function insertStudent(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		$sql = "INSERT INTO students (userId, first, last, courseCode, account, passwd)
-		VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
+		VALUES ('$_userId', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 		$this->database->query($sql);
 		
 		if ($this->database->error !== "") {
@@ -260,21 +260,21 @@ class Database
 
 	//insertUser(): -Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
 	//				-3 types are Student, Lecturer, or Admin.
-	function insertUser(int $_id, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
+	function insertUser(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		switch ($_acct)
 		{
 			case User::Student:
 				$sql = "INSERT INTO students (userId, first, last, courseCode, account, passwd)
-				VALUES ('$_id', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
+				VALUES ('$_userId', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
 			break;
 			case User::Lecturer:
 				$sql = "INSERT INTO lecturers (userId, first, last, account, passwd)
-				VALUES ('$_id', '$_first', '$_last', '$_acct', '$_passwd')";
+				VALUES ('$_userId', '$_first', '$_last', '$_acct', '$_passwd')";
 			break;
 			case User::Admin:
 				$sql = "INSERT INTO admins (userId, first, last, account, passwd)
-				VALUES ('$_id', '$_first', '$_last', '$_acct', '$_passwd')";
+				VALUES ('$_userId', '$_first', '$_last', '$_acct', '$_passwd')";
 			break;
 			default:
 				echo "An error has occurred.";

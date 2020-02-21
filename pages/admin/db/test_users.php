@@ -39,7 +39,7 @@ class TestUsers
         $last = array("Smith", "Petit", "Ortiz", "Sanchez", "Bernal", "Gomez", "Thomas", "Mitchell", "Bridgewood", "Lloyd");
         $course = array("ICT", "CS", "AI", "SS", "AH");
 
-        for($x=0; $x<60; $x++)
+        for($x=0; $x<30; $x++)
         {
             $database->insertUser($id++, $first[rand(0,9)], $last[rand(0,9)], $course[rand(0,4)], User::Student, md5("abcd"));
         }
@@ -56,14 +56,18 @@ class TestUsers
         
         $database = new Database();
 
-        $sql = "SELECT lectureId, studentId FROM attendance";
+        $sql = "SELECT lectureId, studentId, lectures.week FROM attendance
+                INNER JOIN lectures ON lectures.Id = attendance.lectureId";
         $result = $openDb->query($sql);    
 
         if ($result->num_rows > 0)
         {
             while($row = $result->fetch_assoc()) 
             {
-                $output .= $database->updateAttendance($row["lectureId"], $row["studentId"], 0, (string)rand(0,1));
+                for($x=0; $x<5; $x++)
+                {
+                    $output .= $database->updateAttendance($row["lectureId"], $row["studentId"], rand(1,($row["week"]-1)), 1);
+                }
             }
         }
         $openDb->close();

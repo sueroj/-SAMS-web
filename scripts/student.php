@@ -23,6 +23,7 @@ class Student extends User
     {
         $database = new Database();
         $database->insertUser($this->id, $this->first, $this->last, $this->course, User::Student, $this->passwd);
+        $database->insertAttendance();
     }
 
     //Data input security check

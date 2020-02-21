@@ -33,7 +33,7 @@ class StaticData
     const lectureModule = array("CSS", "DWA", "SI", "RM", "CS","SS");
     const lectureTime = array(1000, 1100, 900, 1300, 1200, 1300);
     const lectureStop = array(1200, 1300, 1000, 1400, 1500, 1400);
-    const lectureWeek = array(1, 1, 1, 1, 1, 1, 2, 3);
+    const lectureWeek = array(8, 8, 8, 8, 8, 8, 8, 8);
     const lecturerId = array(1862002, 1662342, 1867542, 1991111, 1566302, 1934333);
     const lectureRoom = array("LAB123", "MUM321", "COM201", "COM201", "COS123", "RUS202");
 

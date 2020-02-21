@@ -130,7 +130,7 @@ function checkData($data){
 <body onload="getAlerts()">
     
 <nav class="global_nav_bar">
-    <div class="logo" title="Return to Home Page"><a href="/HTML/Admin/Admin%20homepage.html">SAMS</a></div>
+    <div class="logo" title="Return to Home Page"><a href="/">SAMS</a></div>
     <img class="profilePicture" src="/images/joel.jpg" alt="User Profile Picture">
     <div class="nav_bar"><?php echo $_SESSION["first"] . " " . $_SESSION["last"]; ?></div> 
     <div class="nav_bar">Student Adminstration Management System</div>
