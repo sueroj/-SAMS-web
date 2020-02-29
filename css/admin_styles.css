@@ -70,7 +70,7 @@ width:200px;
     background-color: #aeb6bf;
 }
 
-.v_nav {
+.v_nav, .v_nav_pulser {
     font-family: century;
     width: 150px;
     padding: 20px;
@@ -78,19 +78,14 @@ width:200px;
     transition: background-color 200ms ease, color 200ms ease;
     background-color: #aeb6bf;
     border: none;
+    text-align: center;
 }
 
 .v_nav_pulser {
-    font-family: century;
-    width: 150px;
-    padding: 20px;
-    font-size: 20px;
-    transition: background-color 200ms ease, color 200ms ease;
     background-color: #b1817d;
     animation-name: color;
     animation-duration: 2s;
     animation-iteration-count: infinite;
-    border: none;
 }
 
 .v_nav:hover {
@@ -108,15 +103,15 @@ width:200px;
     flex-direction: row;
 }
 
-input[type=text], input[type=password] {
-   border: 1px solid #aeb6bf;
-   padding: 3px;
-   margin-bottom: 2px;
-   box-sizing: border-box;
-   width: 300px;
-}
+input[type=text], input[type=password], .attendance_select {
+    border: 1px solid #aeb6bf;
+    padding: 3px;
+    margin-bottom: 2px;
+    box-sizing: border-box;
+    width: 300px;
+ }
 
-select, .submit_btn {
+select, .submit_btn, .edit_btn {
     box-sizing: border-box;
     border: 1px solid #aeb6bf;
     padding: 2px;
@@ -125,6 +120,12 @@ select, .submit_btn {
 
 .submit_btn {
     padding: 3px;
+}
+
+.edit_btn {
+    padding: 3px;
+    margin-left: 20px;
+    margin-bottom: 2px;
 }
 
 select:hover, button:hover {
@@ -143,7 +144,7 @@ select:hover, button:hover {
 }
 
 table {
-    width: 80%;
+    width: 100%;
     text-align: center;
 }
 

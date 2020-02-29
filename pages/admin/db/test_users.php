@@ -66,7 +66,7 @@ class TestUsers
             {
                 for($x=0; $x<5; $x++)
                 {
-                    $output .= $database->updateAttendance($row["lectureId"], $row["studentId"], rand(1,($row["week"]-1)), 1);
+                    $output .= $database->updateAttendance($row["lectureId"], $row["studentId"], rand(1,($row["week"])), 1);
                 }
             }
         }
@@ -74,5 +74,4 @@ class TestUsers
         return $output;
     }
 }
-
 ?>

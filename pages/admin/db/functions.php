@@ -106,9 +106,8 @@ class Database
 
 	}
 
-	//Views records stored in the samsDb database -> students table
-	//So far, only recieves user input for searching by ID # and the
-	//debug command "all" records, which lists all records.
+	//getData(): -Selects data from the database by table.
+	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
 	function getData(string $_input)
 	{
 		$output = null;
@@ -118,12 +117,12 @@ class Database
 			case "students":
 			$sql = "SELECT * FROM students ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("userId", "first", "last", "courseCode", "account", "passwd");
+			$columns = array("userId", "first", "last", "courseCode");
 			break;
-			case "courses":
-			$sql = "SELECT * FROM courses ORDER BY id";
+			case "lectures":
+			$sql = "SELECT * FROM lectures ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("courseCode", "name", "start_date", "end_date");
+			$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
 			break;
 			case "modules":
 			$sql = "SELECT * FROM modules ORDER BY id";
@@ -131,15 +130,15 @@ class Database
 			$columns = array("moduleCode", "name", "courseCode", "weeks");
 			break;
 			case "attendance":
-			$sql = "SELECT * FROM attendance ORDER BY id";
+			$sql = "SELECT * FROM attendance ORDER BY lectureCode";
 			$result = $this->database->query($sql);
-			$columns = array("lectureCode", "moduleId", "studentId", "attended", "percentAttended");
+			$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
 			break;
 			case "alerts":
 			$sql = "SELECT * FROM attendance WHERE percentAttended < 50
 					ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("lectureCode", "studentId", "attended", "percentAttended");
+			$columns = array("lectureId", "lectureCode", "studentId", "attended", "percentAttended");
 			break;
 			case "roomUsage":
 			$sql = "SELECT * FROM roomUsage ORDER BY id";
@@ -149,93 +148,26 @@ class Database
 			default:
 			$sql = "SELECT * FROM attendance WHERE studentId='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("lectureCode", "moduleId", "studentId", "attended");
+			$columns = array("lectureCode", "moduleId", "studentId", "attended", "percentAttended");
 		}
 
-		if ($result->num_rows > 0) {
-			switch (count($columns))
+		if ($result->num_rows > 0)
+		{
+			$output .= "<tr>";
+			for ($x=0; $x<count($columns); $x++)
 			{
-				case 2:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td></tr>";
-					}
-				case 3:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td></tr>";
-					}
-				break;
-				case 4:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .="<tr><td>" . $row[$columns[0]] . "</td>".
-								"<td>" . $row[$columns[1]] . "</td>".
-								"<td>" . $row[$columns[2]] . "</td>".
-								"<td>" . $row[$columns[3]] . "</td></tr>";
-					}
-				break;
-				case 5:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td>".
-					"<td>" . $row[$columns[4]] . "</td></tr>";
-					}
-				break;
-				case 6:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td>".
-					"<td>" . $row[$columns[4]] . "</td>".
-					"<td>" . $row[$columns[5]] . "</td></tr>";
-					}
-				break;
-				case 7:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td>".
-					"<td>" . $row[$columns[4]] . "</td>".
-					"<td>" . $row[$columns[5]] . "</td>".
-					"<td>" . $row[$columns[6]] . "</td></tr>";
-					}
-				break;
-				case 11:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td>".
-					"<td>" . $row[$columns[4]] . "</td>".
-					"<td>" . $row[$columns[5]] . "</td>".
-					"<td>" . $row[$columns[6]] . "</td>".
-					"<td>" . $row[$columns[7]] . "</td>".
-					"<td>" . $row[$columns[8]] . "</td>".
-					"<td>" . $row[$columns[9]] . "</td>".
-					"<td>" . $row[$columns[10]] . "</td>";
-					}
-				break;
-				default:
-					// output data of each row
-					while($row = $result->fetch_assoc()) {
-					$output .= "<tr><td>" . $row[$columns[0]] . "</td>".
-					"<td>" . $row[$columns[1]] . "</td>".
-					"<td>" . $row[$columns[2]] . "</td>".
-					"<td>" . $row[$columns[3]] . "</td>".
-					"<td>" . $row[$columns[4]] . "</td></tr>";
-					}
+			$output .= "<th>" . $columns[$x] . "</th>";
+			}
+			$output .= "</tr>";
+			
+			while ($row = $result->fetch_assoc())
+			{
+				$output .= "<tr>";
+				for ($x=0; $x<count($columns); $x++)
+				{
+					$output .= "<td>" . $row[$columns[$x]] . "</td>";
+				}
+				$output .= "</tr>";
 			}
 
 		} else {
@@ -306,20 +238,21 @@ class Database
 	//insertRoom: Adds a new room to the rooms table.
 	function insertRoom(string $_room, int $_capacity)
     {
-		$sql = "INSERT INTO rooms (room, capacity)
-		VALUES ('$_room', '$_capacity')";
-		$this->database->query($sql);
-		
-		if ($this->database->query($sql) === TRUE) {
-		$output = "New room added.";
-		} else {
-				$output = "Error: " . $sql . "<br>" . $this->database->error;
+		$sql = $this->database->prepare("INSERT INTO rooms (room, capacity)
+		VALUES (?, ?)");
+		$sql->bind_param("si", $_room, $_capacity);
+		$sql->execute();
+
+		if ($this->database->error !== "") {
+			$output = $this->database->error . "<br>";
+			} else {
+				$output = "New room added<br>";
 				}
-		
 		return $output;
+		
     }
 
-	//updateRoomFill: Contains the algorithm for calculating room Fill column.
+	//updateRoomFill: Calculates room Fill column.
 	function updateRoomFill()
 	{
 		$sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
@@ -388,15 +321,17 @@ class Database
 		}
 	}
 
-	//updateAttendance(): -Uses an algorithm to calculate/re-calculate attendance whenever a change is made to the attendance table. 
+	//updateAttendance(): -Calculates attendance whenever a change is made to the attendance table. 
 	//					  -Checks lecture.week column, prevents changes to weeks without lecture data (i.e. an unscheduled lecture).
 	//					  -If lecture data is found, the 12-character attendance string is selected for lectureId and studentId.
 	//					  -The string is split into an array represented by attendance[week], value $_newAttendance updates attendance[week] for $_week.
 	//                    -The array is repackaged into a 12-character string again, named $updatedAttendance, and written into table attendance
 	//				  	  -Meanwhile, the sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
 	//				 	  -This value equals the percentage of lectures that a student has attended and used to update the attendance.percentAttendance column.
-	function updateAttendance(string $_lectureId, int $_studentId, int $_week, string $_newAttendance)
+	function updateAttendance(string $_lectureId, int $_studentId, int $_week, int $_newAttendance)
 	{
+		$_week = $_week - 1;
+
 		$sql = "SELECT lectures.week FROM attendance
 		INNER JOIN lectures ON attendance.lectureId=lectures.id
 		WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
@@ -456,7 +391,7 @@ class Database
 	}
 
 	//insertAttendance(): Adds new Attendance records automatically into attendance table based on information from 
-	//					the lectures, students, and modules tables.
+	//					  the lectures, students, and modules tables.
 	function insertAttendance()
 	{
 		$sql = "INSERT INTO attendance (lectureId, lectureCode, moduleId, room, studentId)

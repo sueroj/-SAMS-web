@@ -12,6 +12,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     $passwd = $_POST["psw"];
     $student = new Student($userId, $first, $last, $course, $passwd);
     $student->addStudent();
+
+    header( "refresh:5;url=/" );
+    echo "New user added.<br>";
+    echo 'You will be redirected in 5 secs. If not, click <a href="/">here</a>.';
+    die();
 }
+
+
 
 ?>

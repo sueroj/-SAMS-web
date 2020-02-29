@@ -24,4 +24,7 @@ echo TestUsers::generateAttendance() . "<br>";
 echo $database->updateRoomUsage() . "<br>";
 echo $database->updateRoomFill() . "<br>";
 
+header( "refresh:5;url=/" );
+echo 'You will be redirected in 5 seconds. If not, click <a href="/">here</a>.'; 
+
 ?>

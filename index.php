@@ -46,9 +46,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 				header("location: /pages/lecturer/lecturer_home.html");
 				break;
 			case User::Admin:
-				header("location: /pages/admin/admin_home.php");
+				header("location: /pages/admin/admin_home.php?view=students");
 				break;
 		}
+		die();
 	} else {
 		$error = "Invalid username and/or password.";
 	}

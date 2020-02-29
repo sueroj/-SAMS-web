@@ -9,35 +9,41 @@ $database = new Database();
 $configure = new Configure();
 
 $output = "";
-$store = array();
-$x = 0;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST")
+if ($_SERVER["REQUEST_METHOD"] == "GET")
 {
-	switch (checkData($_POST["selection"]))
+	switch (checkData($_GET["view"]))
 	{
-        case "Students":
+        case "students":
             $output = $database->getData("students");
         break;
-        case "Courses":
-            $output = $database->getData("courses");
+        case "lectures":
+            $output = $database->getData("lectures");
         break;
-        case "Modules":
+        case "modules":
             $output = $database->getData("modules");
         break;
-        case "Attendance":
-            $database->insertAttendance();
+        case "attendance":
             $output = $database->getData("attendance");
         break;
-        case "Alerts":
+        case "alerts":
             $output = $database->getData("alerts");
         break;
-        case "Rooms":
+        case "rooms":
             $database->updateRoomUsage();
             $database->updateRoomFill();
             $output .= $database->getData("roomUsage");
         break;
-		case "configure": 
+		default:
+			$output = "Invalid option.";
+	}
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST")
+{
+    switch (checkData($_POST["selection"]))
+	{
+        case "configure": 
             $output = $database->createDb()."<br>";
             $output .= $configure->createAttendance()."<br>";
             $output .= $configure->createLectures()."<br>";
@@ -70,9 +76,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         case "testAttendance":           //Test Attendance for development purposes only
             $output = TestUsers::generateAttendance();
         break;
-		default:
-			$output = "Invalid option.";
-	}
+        default:
+        $output = "Invalid option.";
+    }
 }
 
 function checkDb()
@@ -98,6 +104,7 @@ function checkData($data){
 	$data = htmlspecialchars($data);
 	return $data;
 }
+
 ?>
 
 
@@ -106,12 +113,16 @@ function checkData($data){
 
 <head>
     <link rel="stylesheet" type="text/css" href="/css/admin_styles.css">
+    <link rel="stylesheet" href="/css/jquery-ui.css">
        <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
     <title>SAMS | Admin homepage</title>
 
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
     <script>
-        function getAlerts() 
+        function getAlerts()
         {
             var pulser = document.getElementById("pulser_button");
             var xhttp = new XMLHttpRequest();
@@ -124,6 +135,11 @@ function checkData($data){
             xhttp.open("GET", "get_alerts.php?t=" + Math.random(), true);
             xhttp.send();
         } 
+
+        function updateAttendance()
+        {
+            $("#dialog").dialog({ resizable: false, width: 340, modal: true });
+        }
     </script>
 </head>
     
@@ -138,14 +154,12 @@ function checkData($data){
 
 <div class="content">
     <nav class="v_nav_bar">
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-            <input class="v_nav" name="selection" type="submit" value="Students">
-            <input class="v_nav" name="selection" type="submit" value="Courses">
-            <input class="v_nav" name="selection" type="submit" value="Modules">
-            <input class="v_nav" name="selection" type="submit" value="Attendance">
-            <input class="v_nav" name="selection" type="submit" value="Rooms">
-            <input class="v_nav_pulser" id="pulser_button" name="selection" type="submit" value="Alerts" hidden>
-        </form>
+        <a class="v_nav" href="admin_home.php?view=students">Students</a>
+        <a class="v_nav" href="admin_home.php?view=lectures">Lectures</a>
+        <a class="v_nav" href="admin_home.php?view=modules">Modules</a>
+        <a class="v_nav" href="admin_home.php?view=attendance">Attendance</a>
+        <a class="v_nav" href="admin_home.php?view=rooms">Rooms</a>
+        <a class="v_nav_pulser" id="pulser_button" href="admin_home.php?view=alerts" hidden>Alerts</a>
     </nav>
 
     <div>
@@ -154,15 +168,30 @@ function checkData($data){
                     <input type="text" name="record" placeholder="Search">
                     <select name="selection">
                         <option value="view">View Data</option>
-                   <!--     <option value="insert">Insert Data</option> -->
-                   <!--     <option value="delete">Delete Data</option> -->
-                        <option value="configure">Configure Database</option>
-                        
+                        <option value="configure">Configure Database</option>             
                         <option value="testUsers">Create Test Users</option>
                         <option value="testAttendance">Generate Attendance</option>
                     </select>
                     <button class="submit_btn" type="submit">Submit</button>
             </form>
+
+            <button class="edit_btn" onclick="updateAttendance()">Update Attendance</button>
+            <div id="dialog" title="Update Attendance" hidden>
+                <form action="update_attendance.php" method="POST">
+                    <label for="lectureId"><b>Lecture ID</b></label>
+                        <input type="text" name="lectureId" required>
+                    <label for="studentId"><b>Student ID</b></label>
+                        <input type="text" name="studentId" required>
+                    <label for="week"><b>Week</b></label>
+                        <input type="text" name="week" required>
+                    <label for="newAttendance"><b>Attendance Status</b><br></label>
+                        <select class="attendance_select" name="newAttendance">
+                            <option value="attended">Attended</option>
+                            <option value="absent">Absent</option>
+                        </select><br>
+                    <button class="submit_btn" type="submit">Submit</button>
+                </form>
+            </div>
         </div>
 
         <div id="data" class="data">

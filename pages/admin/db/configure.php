@@ -118,12 +118,14 @@ class Configure
         $moduleCode = StaticData::moduleCode;
         $moduleName = StaticData::moduleName;
         $moduleCourseCode = StaticData::moduleCourseCode;
+        $weeks = 12;
 
         for ($x=0; $x<count($moduleName); $x++)
         {
-            $sql = "INSERT INTO modules (moduleCode, name, courseCode, weeks)
-            VALUES ('$moduleCode[$x]', '$moduleName[$x]', '$moduleCourseCode[$x]', 12)";
-            $this->database->query($sql);
+            $sql = $this->database->prepare("INSERT INTO modules (moduleCode, name, courseCode, weeks)
+            VALUES (?, ?, ?, ?)");
+            $sql->bind_param("sssi", $moduleCode[$x], $moduleName[$x], $moduleCourseCode[$x], $weeks);
+            $sql->execute();
         }
 
         if ($this->database->error !== "") {
@@ -152,9 +154,10 @@ class Configure
 
         for ($x=0; $x<count($courseName); $x++)
         {
-            $sql = "INSERT INTO courses (courseCode, name)
-            VALUES ('$courseCode[$x]', '$courseName[$x]')";
-            $this->database->query($sql);
+            $sql = $this->database->prepare("INSERT INTO courses (courseCode, name)
+            VALUES (?, ?)");
+            $sql->bind_param("ss", $courseCode[$x], $courseName[$x]);
+            $sql->execute();
         }
     
         if ($this->database->error !== "") {
@@ -182,9 +185,10 @@ class Configure
              $room = $roomName[$x];
              $capacity = $roomCapacity[$x];
 
-            $sql = "INSERT INTO rooms (room, capacity)
-             VALUES ('$room', '$capacity')";
-             $this->database->query($sql);
+             $sql = $this->database->prepare("INSERT INTO rooms (room, capacity)
+             VALUES (?, ?)");
+             $sql->bind_param("si", $room, $capacity);
+             $sql->execute();
          }
 		
         if ($this->database->error !== "") {
