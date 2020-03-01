@@ -93,6 +93,19 @@ class Configure
             $dbFunctions->insertLecture($lectureDate[$x], $lectureModule[$x], $lectureTime[$x], $lectureStop[$x], $lectureWeek[$x], 1, $lecturerId[$x], $lectureRoom[$x]);
         }
 
+        $lectureDateTri = StaticData::lectureDateTri;
+        $lectureModuleTri = StaticData::lectureModuleTri;
+        $lectureTimeTri = StaticData::lectureTimeTri;
+        $lectureStopTri = StaticData::lectureStopTri;
+        $lectureWeekTri = StaticData::lectureWeekTri;
+        $lecturerIdTri = StaticData::lecturerIdTri;
+        $lectureRoomTri = StaticData::lectureRoomTri;
+
+        for ($x=0; $x<count($lectureDateTri); $x++)
+        {
+            $dbFunctions->insertLecture($lectureDateTri[$x], $lectureModuleTri, $lectureTimeTri, $lectureStopTri, $lectureWeekTri++, 1, $lecturerIdTri, $lectureRoomTri);
+        }
+
         if ($this->database->error !== "") {
             $output = $this->database->error;
             } else {

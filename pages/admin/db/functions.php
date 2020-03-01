@@ -148,7 +148,7 @@ class Database
 			default:
 			$sql = "SELECT * FROM attendance WHERE studentId='$_input' ORDER BY id";
 			$result = $this->database->query($sql);
-			$columns = array("lectureCode", "moduleId", "studentId", "attended", "percentAttended");
+			$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
 		}
 
 		if ($result->num_rows > 0)
@@ -332,61 +332,45 @@ class Database
 	{
 		$_week = $_week - 1;
 
-		$sql = "SELECT lectures.week FROM attendance
-		INNER JOIN lectures ON attendance.lectureId=lectures.id
+		$sql = "SELECT attended, moduleId FROM attendance
 		WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-		$verifyWeek = $this->database->query($sql)->fetch_array(MYSQLI_NUM);
-
-		if ($_week < $verifyWeek[0])
+		$result = $this->database->query($sql);
+		$attendanceStr = $result->fetch_array(MYSQLI_NUM);
+		$moduleId = $attendanceStr[1];
+		$attendanceStr = $attendanceStr[0];
+		
+		if($result->num_rows > 0)
 		{
-			$sql = "SELECT attended FROM attendance
-			WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-			$result = $this->database->query($sql);
-			$attendanceStr = $result->fetch_array(MYSQLI_NUM);
-			$attendanceStr = $attendanceStr[0];
-			
-			if($result->num_rows > 0)
+			$attendance = str_split($attendanceStr);
+			$attendance[$_week] = $_newAttendance;
+			$updatedAttendance = $attendance[0];
+			$sumAttendance = (int)$attendance[0];
+
+			for ($x=1; $x<count($attendance); $x++)
 			{
-				$attendance = str_split($attendanceStr);
-				$attendance[$_week] = $_newAttendance;
-				$updatedAttendance = $attendance[0];
-				$sumAttendance = (int)$attendance[0];
-
-				for ($x=1; $x<count($attendance); $x++)
-				{
-					$updatedAttendance .= $attendance[$x];
-					$sumAttendance += $attendance[$x];
-				}
+				$updatedAttendance .= $attendance[$x];
+				$sumAttendance += $attendance[$x];
 			}
+		}
 
-			$sql = "UPDATE attendance SET attended='$updatedAttendance'
-					WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-			$this->database->query($sql);
+		$sql = "UPDATE attendance SET attended='$updatedAttendance'
+				WHERE moduleId='$moduleId' AND studentId='$_studentId'";
+		$this->database->query($sql);
 
-			$sql = "SELECT attendance.lectureId, lectures.week FROM attendance
-					INNER JOIN lectures ON attendance.lectureId=lectures.id
-					WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-			$result = $this->database->query($sql);
-			$attendanceWeek = $result->fetch_array(MYSQLI_NUM);
-			$attendanceWeek = $attendanceWeek[1];
+		echo $this->database->error;
 
-			$percentAttended = ($sumAttendance / $attendanceWeek) * 100;
+		$percentAttended = ($sumAttendance / 12) * 100;
 
-			$sql = "UPDATE attendance SET percentAttended='$percentAttended'
-			WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-			$this->database->query($sql);
+		$sql = "UPDATE attendance SET percentAttended='$percentAttended'
+		WHERE moduleId='$moduleId' AND studentId='$_studentId'";
+		$this->database->query($sql);
 
-			if ($this->database->error !== "") {
-				$output = $this->database->error;
-				} else {
-						$output = "Attendance updated.<br>";
-						}
-				return $output;
-		} else
-			{
-				return "Invalid week entry.<br>";
-			}
-
+		if ($this->database->error !== "") {
+			$output = $this->database->error;
+			} else {
+					$output = "Attendance updated.<br>";
+					}
+			return $output;
 
 	}
 
