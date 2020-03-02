@@ -22,7 +22,7 @@ class Database
 	//Deconstructor for closing database connection.
 	function __deconstruct()
 	{
-		$this->database->close();
+		$this->database = null;
 	}
 
 	//verifyAccount(): -Used to verify username and password with the database.
@@ -30,36 +30,44 @@ class Database
     function verifyAccount(int $_userId, string $_passwd)
 	{
 		$field = null;
+		try
+		{
+			$result = $this->database->prepare("SELECT * FROM students WHERE userId=?");
+			$result->execute([$_userId]);
+			$field = $result->fetch();
 
-		$sql = "SELECT * FROM students WHERE userId='$_userId'";
-		$result = $this->database->query($sql);
-		
-		if ($result->num_rows < 1){
-			$sql = "SELECT * FROM lecturers WHERE userId='$_userId'";
-			$result = $this->database->query($sql);
-			if ($result->num_rows < 1){
-				$sql = "SELECT * FROM admins WHERE userId='$_userId'";
-				$result = $this->database->query($sql);
-			}
-		}	
+				if ($field === false){
+				$result = $this->database->prepare("SELECT * FROM lecturers WHERE userId=?");
+				$result->execute([$_userId]);
+				$field = $result->fetch();
 
-		$field = $result->fetch_array(MYSQLI_ASSOC);
-		if ($field != null){
-			if (md5($_passwd) == $field["passwd"]){
-				session_start();
-				$_SESSION["loggedin"] = true;
-				$_SESSION["userId"] = $_userId;
-				$_SESSION["first"] = $field["first"];
-				$_SESSION["last"] = $field["last"];
-				$_SESSION["account"] = $field["account"];
-				$this->database->close();
-				return true;
-			} else {
-				$this->database->close();
+					if ($field === false){
+						$result = $this->database->prepare("SELECT * FROM admins WHERE userId=?");
+						$result->execute([$_userId]);
+						$field = $result->fetch();
+					}
+			 	}
+			
+			
+			if ($field !== false){
+				if (md5($_passwd) == $field["passwd"]){
+					session_start();
+					$_SESSION["loggedin"] = true;
+					$_SESSION["userId"] = $_userId;
+					$_SESSION["first"] = $field["first"];
+					$_SESSION["last"] = $field["last"];
+					$_SESSION["account"] = $field["account"];
+					return true;
+				} else {
+					return false;
+					}
+			} else{
 				return false;
-				}
-		} else{
-			return false;
+			}
+		}
+		catch(PDOException $e)
+		{
+			echo "Error: " . $e->getMessage();
 		}
 	}
 
@@ -112,47 +120,49 @@ class Database
 	{
 		$output = null;
 
-		switch ($_input)
+		try
 		{
-			case "students":
-			$sql = "SELECT * FROM students ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("userId", "first", "last", "courseCode");
-			break;
-			case "lectures":
-			$sql = "SELECT * FROM lectures ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
-			break;
-			case "modules":
-			$sql = "SELECT * FROM modules ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("moduleCode", "name", "courseCode", "weeks");
-			break;
-			case "attendance":
-			$sql = "SELECT * FROM attendance ORDER BY lectureCode";
-			$result = $this->database->query($sql);
-			$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
-			break;
-			case "alerts":
-			$sql = "SELECT * FROM attendance WHERE percentAttended < 50
-					ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("lectureId", "lectureCode", "studentId", "attended", "percentAttended");
-			break;
-			case "roomUsage":
-			$sql = "SELECT * FROM roomUsage ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("room", "date", "fill", "scheduled", "capacity");
-			break;
-			default:
-			$sql = "SELECT * FROM attendance WHERE studentId='$_input' ORDER BY id";
-			$result = $this->database->query($sql);
-			$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
-		}
+			switch ($_input)
+			{
+				case "students":
+					$result = $this->database->query("SELECT * FROM students ORDER BY id");
+					$columns = array("userId", "first", "last", "courseCode");
+				break;
+				case "lectures":
+					$result = $this->database->query("SELECT * FROM lectures ORDER BY id");
+					$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
+				break;
+				case "modules":
+					$result = $this->database->query("SELECT * FROM modules ORDER BY id");
+					$columns = array("moduleCode", "name", "courseCode", "weeks");
+				break;
+				case "attendance":
+					$result = $this->database->query("SELECT * FROM attendance ORDER BY lectureCode");
+					$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
+				break;
+				case "alerts":
+					$result = $this->database->query("SELECT * FROM attendance WHERE percentAttended < 50 ORDER BY id");
+					$columns = array("lectureId", "lectureCode", "studentId", "attended", "percentAttended");
+				break;
+				case "roomUsage":
+					$result = $this->database->query("SELECT * FROM roomUsage ORDER BY id");
+					$columns = array("room", "date", "fill", "scheduled", "capacity");
+				break;
+				default:
+					$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
+					$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
+					$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
+			
+					if ($result->fetch() === false)
+					{
+						$result = $this->database->prepare("SELECT * FROM roomUsage WHERE room=:room ORDER BY id");
+						$result->execute(['room' => $_input]);
+						$columns = array("room", "date", "fill", "scheduled", "capacity");
+					}
+			}
 
-		if ($result->num_rows > 0)
-		{
+			if ($result->fetch() !== false )
+			{
 			$output .= "<tr>";
 			for ($x=0; $x<count($columns); $x++)
 			{
@@ -160,130 +170,213 @@ class Database
 			}
 			$output .= "</tr>";
 			
-			while ($row = $result->fetch_assoc())
-			{
-				$output .= "<tr>";
-				for ($x=0; $x<count($columns); $x++)
+				while ($row = $result->fetch())
 				{
-					$output .= "<td>" . $row[$columns[$x]] . "</td>";
+					$output .= "<tr>";
+					for ($x=0; $x<count($columns); $x++)
+					{
+						$output .= "<td>" . $row[$columns[$x]] . "</td>";
+					}
+					$output .= "</tr>";
 				}
-				$output .= "</tr>";
-			}
 
-		} else {
-			$output = "0 results";
+			} else {
+				$output = "0 results";
+			}
+			return $output;
 		}
-		return $output;
+		catch(PDOException $e)
+		{
+			return "Error: " . $e->getMessage();
+		}
+		
 	}
 
 	//insertStudent(): Adds a new student to the students table.
 	function insertStudent(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
-		$sql = "INSERT INTO students (userId, first, last, courseCode, account, passwd)
-		VALUES ('$_userId', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
-		$this->database->query($sql);
-		
-		if ($this->database->error !== "") {
-		echo $this->database->error . "<br>";
-		} else {
-				echo "New student added<br>";
-				}
+		try
+		{
+			$sql = $this->database->prepare("INSERT INTO students (userId, first, last, courseCode, account, passwd)
+			VALUES (:userId, :first, :last, :courseCode, :acct, :passwd)");
+			$sql->bindParam(':userId', $_userId);
+			$sql->bindParam(':first', $_first);
+			$sql->bindParam(':last', $_last);
+			$sql->bindParam(':courseCode', $_course);
+			$sql->bindParam(':acct', $_acct);
+			$sql->bindParam(':passwd', $_passwd);
+			$sql->execute();
+
+			return "New student added.<br>";
+		}
+
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
 	}
 
 	//insertUser(): -Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
 	//				-3 types are Student, Lecturer, or Admin.
 	function insertUser(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
-		switch ($_acct)
+		try
 		{
-			case User::Student:
-				$sql = "INSERT INTO students (userId, first, last, courseCode, account, passwd)
-				VALUES ('$_userId', '$_first', '$_last', '$_course', '$_acct', '$_passwd')";
-			break;
-			case User::Lecturer:
-				$sql = "INSERT INTO lecturers (userId, first, last, account, passwd)
-				VALUES ('$_userId', '$_first', '$_last', '$_acct', '$_passwd')";
-			break;
-			case User::Admin:
-				$sql = "INSERT INTO admins (userId, first, last, account, passwd)
-				VALUES ('$_userId', '$_first', '$_last', '$_acct', '$_passwd')";
-			break;
-			default:
-				echo "An error has occurred.";
+			switch ($_acct)
+			{
+				case User::Student:
+					$sql = $this->database->prepare("INSERT INTO students (userId, first, last, courseCode, account, passwd)
+					VALUES (:userId, :first, :last, :courseCode, :acct, :passwd)");
+					$sql->bindParam(':courseCode', $_course);
+				break;
+				case User::Lecturer:
+					$sql = $this->database->prepare("INSERT INTO lecturers (userId, first, last, account, passwd)
+					VALUES (:userId, :first, :last, :acct, :passwd)");
+				break;
+				case User::Admin:
+					$sql = $this->database->prepare("INSERT INTO admins (userId, first, last, account, passwd)
+					VALUES (:userId, :first, :last, :acct, :passwd)");
+				break;
+				default:
+					echo "An error has occurred.";
+			}
+			$sql->bindParam(':userId', $_userId);
+			$sql->bindParam(':first', $_first);
+			$sql->bindParam(':last', $_last);
+			$sql->bindParam(':acct', $_acct);
+			$sql->bindParam(':passwd', $_passwd);
+			$sql->execute();
+
+			return "New user added.<br>";
 		}
-		$this->database->query($sql);
 		
-		if ($this->database->error !== "") {
-		$output = $this->database->error . "<br>";
-		} else {
-				$output = "New user added<br>";
-				}
-		return $output;
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
 	}
 	//insertLecture(): Adds a new lecture to the lectures table.
 	function insertLecture(string $_date, string $_module, int $_time, int $_stop, int $_week, int $_trimester, int $_userId, string $_room)
 	{
-            $sql = "INSERT INTO lectures (date, moduleCode, start_time, stop_time, week, trimester, lecturer, room)
-            VALUES ('$_date', '$_module', '$_time', '$_stop', '$_week', '$_trimester', '$_userId', '$_room')";
-			$this->database->query($sql);
-		
-        if ($this->database->error !== "") {
-            $output = $this->database->error;
-            } else {
-                    $output = "New lectures added.";
-                    }
-        return $output;
+		try
+		{
+			$sql = $this->database->prepare("INSERT INTO lectures (date, moduleCode, start_time, stop_time, week, trimester, lecturer, room)
+			VALUES (:date, :moduleCode, :start_time, :stop_time, :week, :trimester, :lecturer, :room)");
+			$sql->bindParam(':date', $_date);
+			$sql->bindParam(':moduleCode', $_module);
+			$sql->bindParam(':start_time', $_time);
+			$sql->bindParam(':stop_time', $_stop);
+			$sql->bindParam(':week', $_week);
+			$sql->bindParam(':trimester', $_trimester);
+			$sql->bindParam(':lecturer', $_userId);
+			$sql->bindParam(':room', $_room);
+			$sql->execute();
+
+			return "New module added.";
+		}
+
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
+	}
+
+	function insertModule(string $_moduleCode, string $_name, string $_courseCode, int $_weeks)
+	{
+		try
+		{
+			$sql = $this->database->prepare("INSERT INTO modules (moduleCode, name, courseCode, weeks)
+			VALUES (:moduleCode, :name, :courseCode, :weeks)");
+			$sql->bindParam(':moduleCode', $_moduleCode);
+			$sql->bindParam(':name', $_name);
+			$sql->bindParam(':courseCode', $_courseCode);
+			$sql->bindParam(':weeks', $_weeks);
+			$sql->execute();
+
+			return "New module added.";
+		}
+
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
+	}
+
+	function insertCourse(string $_courseCode, string $_name)
+	{
+		try
+		{
+			$sql = $this->database->prepare("INSERT INTO courses (courseCode, name)
+			VALUES (:courseCode, :name)");
+			$sql->bindParam(':courseCode', $_courseCode);
+			$sql->bindParam(':name', $_name);
+			$sql->execute();
+	
+			return "New course added.";
+		}
+
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
 	}
 
 	//insertRoom: Adds a new room to the rooms table.
-	function insertRoom(string $_room, int $_capacity)
+	function insertRoom(string $_roomName, int $_roomCapacity)
     {
-		$sql = $this->database->prepare("INSERT INTO rooms (room, capacity)
-		VALUES (?, ?)");
-		$sql->bind_param("si", $_room, $_capacity);
-		$sql->execute();
+		try
+		{
+			$sql = $this->database->prepare("INSERT INTO rooms (room, capacity)
+			VALUES (:room, :capacity)");
+			$sql->bindParam(':room', $_roomName);
+			$sql->bindParam(':capacity', $_roomCapacity);
+			$sql->execute();
+	
+			return "New room added.";
+		}
 
-		if ($this->database->error !== "") {
-			$output = $this->database->error . "<br>";
-			} else {
-				$output = "New room added<br>";
-				}
-		return $output;
-		
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
     }
 
 	//updateRoomFill: Calculates room Fill column.
 	function updateRoomFill()
 	{
-		$sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
-		INNER JOIN lectures ON attendance.lectureId=lectures.id";
-		$result = $this->database->query($sql);
-
-		if ($result->num_rows > 0)
+		try
 		{
-			$sql = "UPDATE roomUsage SET fill=0";
-			$this->database->query($sql);
-
-			while($row = $result->fetch_assoc()) 
+			$sql = "SELECT lectures.date, lectures.week, attended, lectures.room FROM attendance
+			INNER JOIN lectures ON attendance.lectureId=lectures.id";
+			$result = $this->database->query($sql);
+	
+			if ($result !== false)
 			{
-				$date = $row["date"];
-				$week = $row["week"] - 1;
-				$attendanceStr = $row["attended"];
-				$room = $row["room"];
-
-				$attendance = str_split($attendanceStr);
-
-				if ($attendance[$week] == 1)
+				$sql = "UPDATE roomUsage SET fill=0";
+				$this->database->exec($sql);
+	
+				while($row = $result->fetch()) 
 				{
-					$sql = "UPDATE roomUsage SET fill=fill+1
-					WHERE room='$room' AND date='$date'";
-					$this->database->query($sql);
+					$date = $row["date"];
+					$week = $row["week"] - 1;
+					$attendanceStr = $row["attended"];
+					$room = $row["room"];
+	
+					$attendance = str_split($attendanceStr);
+	
+					if ($attendance[$week] == 1)
+					{
+						$sql = "UPDATE roomUsage SET fill=fill+1
+						WHERE room='$room' AND date='$date'";
+						$this->database->exec($sql);
+					}
 				}
 			}
 		}
 
-		if ($this->database->error !== "") {
-		echo $this->database->error;
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
 		}
 	}
 
@@ -293,31 +386,38 @@ class Database
 	//					  roomUsage.scheduled column.
 	function updateRoomUsage()
 	{
-		$sql = "INSERT INTO roomUsage (room, date, capacity)
-		SELECT rooms.room, lectures.date, rooms.capacity FROM lectures, rooms
-		WHERE lectures.room = rooms.room";
-		$this->database->query($sql);
 
-		$sql = "SELECT COUNT(studentId), lectureId, room FROM attendance
-		GROUP BY lectureId";
-		$result = $this->database->query($sql);
-
-		if ($result->num_rows > 0)
+		try
 		{
-			while($row = $result->fetch_array(MYSQLI_NUM)) 
-			{
-				$studentCount = $row[0];
-				$room = $row[2];
+			$sql = "INSERT INTO roomUsage (room, date, capacity)
+			SELECT rooms.room, lectures.date, rooms.capacity FROM lectures, rooms
+			WHERE lectures.room = rooms.room";
+			$this->database->exec($sql);
+		}
+		catch(PDOException $e){}
 
-				$sql = "UPDATE roomUsage SET scheduled='$studentCount'
-				WHERE room='$room'";
-				$this->database->query($sql);
+		try
+		{
+			$sql = "SELECT COUNT(studentId), lectureId, room FROM attendance
+			GROUP BY lectureId";
+			$result = $this->database->query($sql);
+	
+			if ($result !== false)
+			{
+				while($row = $result->fetch(PDO::FETCH_NUM)) 
+				{
+					$studentCount = $row[0];
+					$room = $row[2];
+	
+					$sql = "UPDATE roomUsage SET scheduled='$studentCount'
+					WHERE room='$room'";
+					$this->database->exec($sql);
+				}
 			}
 		}
-
-		
-		if ($this->database->error !== "") {
-		echo $this->database->error;
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
 		}
 	}
 
@@ -332,15 +432,16 @@ class Database
 	{
 		$_week = $_week - 1;
 
-		$sql = "SELECT attended, moduleId FROM attendance
-		WHERE lectureId='$_lectureId' AND studentId='$_studentId'";
-		$result = $this->database->query($sql);
-		$attendanceStr = $result->fetch_array(MYSQLI_NUM);
-		$moduleId = $attendanceStr[1];
-		$attendanceStr = $attendanceStr[0];
-		
-		if($result->num_rows > 0)
+		try
 		{
+			$sql = $this->database->prepare("SELECT attended, moduleId FROM attendance WHERE lectureId=:lectureId AND studentId=:studentId");
+			$sql->execute(['lectureId' => $_lectureId, 'studentId' => $_studentId]);
+			$result = $sql->fetch(PDO::FETCH_NUM);
+			$attendanceStr = $result[0];
+			$moduleId = $result[1];
+
+			if($result !== false)
+			{
 			$attendance = str_split($attendanceStr);
 			$attendance[$_week] = $_newAttendance;
 			$updatedAttendance = $attendance[0];
@@ -348,40 +449,44 @@ class Database
 
 			for ($x=1; $x<count($attendance); $x++)
 			{
-				$updatedAttendance .= $attendance[$x];
-				$sumAttendance += $attendance[$x];
+			$updatedAttendance .= $attendance[$x];
+			$sumAttendance += $attendance[$x];
 			}
+			}
+
+			$sql = $this->database->prepare("UPDATE attendance SET attended=? WHERE moduleId=? AND studentId=?");
+			$sql->execute([$updatedAttendance, $moduleId, $_studentId]);
+
+			$percentAttended = ($sumAttendance / 12) * 100;
+
+			$sql = $this->database->prepare("UPDATE attendance SET percentAttended=? WHERE moduleId=? AND studentId=?");
+			$sql->execute([$percentAttended, $moduleId, $_studentId]);
 		}
-
-		$sql = "UPDATE attendance SET attended='$updatedAttendance'
-				WHERE moduleId='$moduleId' AND studentId='$_studentId'";
-		$this->database->query($sql);
-
-		echo $this->database->error;
-
-		$percentAttended = ($sumAttendance / 12) * 100;
-
-		$sql = "UPDATE attendance SET percentAttended='$percentAttended'
-		WHERE moduleId='$moduleId' AND studentId='$_studentId'";
-		$this->database->query($sql);
-
-		if ($this->database->error !== "") {
-			$output = $this->database->error;
-			} else {
-					$output = "Attendance updated.<br>";
-					}
-			return $output;
-
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
 	}
 
 	//insertAttendance(): Adds new Attendance records automatically into attendance table based on information from 
 	//					  the lectures, students, and modules tables.
 	function insertAttendance()
 	{
-		$sql = "INSERT INTO attendance (lectureId, lectureCode, moduleId, room, studentId)
-				SELECT lectures.id, CONCAT(date,lectures.moduleCode), CONCAT(lectures.moduleCode, trimester), lectures.room, students.userId FROM lectures, students, modules
-				WHERE lectures.moduleCode = modules.moduleCode AND modules.courseCode = students.courseCode";
-				$this->database->query($sql);
+		try
+		{
+			$sql = "INSERT INTO attendance (lectureId, lectureCode, moduleId, room, studentId)
+			SELECT lectures.id, CONCAT(date,lectures.moduleCode), CONCAT(lectures.moduleCode, trimester), lectures.room, students.userId FROM lectures, students, modules
+			WHERE lectures.moduleCode = modules.moduleCode AND modules.courseCode = students.courseCode";
+			$this->database->exec($sql);
+
+			return "Attendance updated.<br>";
+		}
+
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
+
 	}
 
 	//getAlerts(): -Used by the admin_home.php page to query the database for any attendance records < 50%.
@@ -394,9 +499,9 @@ class Database
 		$sql = "SELECT percentAttended FROM attendance";
 		$result = $this->database->query($sql);
 
-		if($result->num_rows > 0)
+		if($result !== false)
 		{
-			while($row = $result->fetch_assoc()) 
+			while($row = $result->fetch()) 
 			{
 				if($row["percentAttended"] < 50)
 				{
@@ -410,29 +515,37 @@ class Database
 	//Initial Database creation.
 	function createDb()
 	{
-		$database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-		if ($this->database->connect_error){
-			die("Connection failed: " . $conn->connect_error);	
-		}
+		try
+		{
+			$pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+			// set the PDO error mode to exception
+			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+			$sql = "CREATE DATABASE samsdb";
 
-		//Create or verify DB exists
-		$sql = "CREATE DATABASE samsdb";
-		if ($this->database->query($sql) === TRUE){
-			$output = "database samsdb created.";
-		} else {
-			$output = "Error creating database: " . $this->database->error;
+			$pdo->exec($sql);
+			return "Database samsdb created.<br>";
 		}
-		return $output;
+		catch(PDOException $e)
+		{
+			return $e->getMessage();
+		}
 	}
 
 	//Connect to Database
     private function connectDb()
 	{
-		$conn = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD, Globals::SERVER_DB);
-		if ($conn->connect_error){
-			die("Connection failed: " . $conn->connect_error);
-		}
-		return $conn;
+		try {
+			$pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN  . ";dbname=" . Globals::SERVER_DB, Globals::SERVER_USER, Globals::SERVER_PWD);
+			// set the PDO error mode to exception
+			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+			}
+		catch(PDOException $e)
+			{
+				echo "Connection failed: " . $e->getMessage();
+			}
+		return $pdo;
 	}
 }
 ?>

@@ -1,8 +1,8 @@
 <?php
 session_start();
 include_once "pages/admin/db/functions.php";
+include_once "pages/admin/db/configure.php";
 include_once "scripts/user.php";
-include_once "scripts/globals.php";
 
 //Session "checker": Checks if user is already logged into the system,
 //automatically proceeds to directory.php if the user is logged in.
@@ -15,25 +15,25 @@ include_once "scripts/globals.php";
 
 $user = $passwd = "";
 $error = null;
+$database = new Database();
+$configure = new Configure();
 
-checkDb();
+$configure->checkDb();
 
 //Username/password verification, send to directory.php if okay.
 if($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	$database = new Database();
+	// if(empty(checkData($_POST["user"]))){
+	// 	$user_err = "Enter Username.";
+	// } else {
+	// 	$user = checkData($_POST["user"]);
+	// }
 
-	if(empty(checkData($_POST["user"]))){
-		$user_err = "Enter Username.";
-	} else {
-		$user = checkData($_POST["user"]);
-	}
-
-	if(empty(checkData($_POST["passwd"]))){
-		$passwd_err = "Enter Username.";
-	} else {
-		$passwd = checkData($_POST["passwd"]);
-	}
+	// if(empty(checkData($_POST["passwd"]))){
+	// 	$passwd_err = "Enter Username.";
+	// } else {
+	// 	$passwd = checkData($_POST["passwd"]);
+	// }
 
 	if($database->verifyAccount(checkData($_POST["user"]), checkData($_POST["passwd"])))
 	{
@@ -64,19 +64,19 @@ $data = htmlspecialchars($data);
 return $data;
 }
 
-function checkDb()
-{
-    $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-    if ($database->connect_error){
-        die("Connection failed: " . $database->connect_error);	
-    }
+// function checkDb()
+// {
+//     $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+//     if ($database->connect_error){
+//         die("Connection failed: " . $database->connect_error);	
+//     }
 
-    //Create or verify DB exists
-    $sql = "CREATE DATABASE samsdb";
-    if ($database->query($sql) === TRUE){
-        $output = "database samsdb created.";
-	}
-}
+//     //Create or verify DB exists
+//     $sql = "CREATE DATABASE samsdb";
+//     if ($database->query($sql) === TRUE){
+//         $output = "database samsdb created.";
+// 	}
+// }
 ?>
 
 <!DOCTYPE html>

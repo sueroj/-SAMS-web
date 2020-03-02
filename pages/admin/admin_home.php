@@ -4,9 +4,10 @@ include_once "db/functions.php";
 include_once "db/configure.php";
 include_once "db/test_users.php";
 
-checkDb();
 $database = new Database();
 $configure = new Configure();
+
+$configure->checkDb();
 
 $output = "";
 
@@ -30,9 +31,15 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
             $output = $database->getData("alerts");
         break;
         case "rooms":
-            $database->updateRoomUsage();
+            $output .= $database->updateRoomUsage();
             $database->updateRoomFill();
             $output .= $database->getData("roomUsage");
+        break;
+        case "logout":
+            session_unset();
+            session_destroy();
+            header("location: /");
+            die();
         break;
 		default:
 			$output = "Invalid option.";
@@ -56,18 +63,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output .= $configure->createAdmins()."<br>";
             $output .= $database->insertAttendance();
         break;
-        case "insert":
-            $output = $database->updateRecord(checkData($_POST["record"]));
-        break;
+        // case "insert":
+        //     $output = $database->updateRecord(checkData($_POST["record"]));
+        // break;
         case "view":
             $output = $database->getData(checkData($_POST["record"]));
         break;
-        case "delete":
-            $output = $database->deleteRecord(checkData($_POST["record"]));
-        break;
-        case "drop":
-            $output = $database->deleteTable();
-        break;
+        // case "delete":
+        //     $output = $database->deleteRecord(checkData($_POST["record"]));
+        // break;
+        // case "drop":
+        //     $output = $database->deleteTable();
+        // break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
             $output = TestUsers::generateUsers();
@@ -81,22 +88,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
     }
 }
 
-function checkDb()
-{
-    $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-    if ($database->connect_error){
-        die("Connection failed: " . $conn->connect_error);	
-    }
+// function checkDb()
+// {
+//     $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+//     if ($database->connect_error){
+//         die("Connection failed: " . $conn->connect_error);	
+//     }
 
-    //Create or verify DB exists
-    $sql = "CREATE DATABASE samsdb";
-    if ($database->query($sql) === TRUE){
-        $output = "database samsdb created.";
-    } else {
-        $output = "Error creating database: " . $database->error;
-    }
-    return $output;
-}
+//     //Create or verify DB exists
+//     $sql = "CREATE DATABASE samsdb";
+//     if ($database->query($sql) === TRUE){
+//         $output = "database samsdb created.";
+//     } else {
+//         $output = "Error creating database: " . $database->error;
+//     }
+//     return $output;
+// }
 
 function checkData($data){
 	$data = trim($data);
@@ -146,10 +153,13 @@ function checkData($data){
 <body onload="getAlerts()">
     
 <nav class="global_nav_bar">
+    <div class="nav_bar">
+        <a class="submit_btn" href="admin_home.php?view=logout">Log out</a> 
+    </div>
     <div class="logo" title="Return to Home Page"><a href="/">SAMS</a></div>
-    <img class="profilePicture" src="/images/joel.jpg" alt="User Profile Picture">
-    <div class="nav_bar"><?php echo $_SESSION["first"] . " " . $_SESSION["last"]; ?></div> 
+    <div class="nav_bar"><?php echo $_SESSION["first"] . " " . $_SESSION["last"]; ?></div>
     <div class="nav_bar">Student Adminstration Management System</div>
+
 </nav>
 
 <div class="content">
