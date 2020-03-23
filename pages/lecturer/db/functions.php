@@ -89,13 +89,47 @@ class Database
 
 	}
 
-	function getModule()
+	function getModules()
 	{
-		//Template for getting one or all
+		$output = null;
 
+		try
+		{
+			$result = $this->database->prepare("SELECT moduleCode, name FROM modules");
+			$result->execute();
 
+			while ($row = $result->fetch())
+				{
+					$output .=  "<option value=" . $row["moduleCode"] . ">" . $row["name"] . "</option>";
+				}
+			return $output;
+		}
+		catch(PDOException $e)
+		{
+			echo "Error: " . $e->getMessage();
+		}
+	}
+	function viewModule($_moduleCode)
+	{
+		$output = null;
 
+		try
+		{
+			$result = $this->database->prepare("SELECT studentId, percentAttended FROM attendance");
+			$result->execute([$_moduleCode]);
 
+			$output .=  "<table>";
+			while ($row = $result->fetch())
+				{
+					$output .=  "<tr><td>" . $row["studentId"] . $row["percentAttended"] . "</tr></td>";
+				}
+			$output .=  "</table>";
+			return $output;
+		}
+		catch(PDOException $e)
+		{
+			echo "Error: " . $e->getMessage();
+		}
 	}
 
 	function getAttendance()
