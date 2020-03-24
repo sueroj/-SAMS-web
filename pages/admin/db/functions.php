@@ -98,25 +98,7 @@ class Database
 
 	}
 
-	function getAttendance()
-	{
-		//Template for getting one or all
-
-
-
-	}
-
-	function getRoom()
-	{
-		//Template for getting one or all
-
-
-
-	}
-
-	//getData(): -Selects data from the database by table.
-	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
-	function getData(string $_input)
+	function getAttendance(string $_input)
 	{
 		$output = null;
 
@@ -124,49 +106,27 @@ class Database
 		{
 			switch ($_input)
 			{
-				case "students":
-					$result = $this->database->query("SELECT * FROM students ORDER BY id");
-					$columns = array("userId", "first", "last", "courseCode");
-				break;
-				case "lectures":
-					$result = $this->database->query("SELECT * FROM lectures ORDER BY id");
-					$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
-				break;
-				case "modules":
-					$result = $this->database->query("SELECT * FROM modules ORDER BY id");
-					$columns = array("moduleCode", "name", "courseCode", "weeks");
-				break;
 				case "attendance":
-					$result = $this->database->query("SELECT * FROM attendance ORDER BY lectureCode");
-					$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
+					$result = $this->database->query("SELECT * FROM attendance GROUP BY studentId ORDER BY studentId");
+					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
 				break;
 				case "alerts":
-					$result = $this->database->query("SELECT * FROM attendance WHERE percentAttended < 50 ORDER BY id");
-					$columns = array("lectureId", "lectureCode", "studentId", "attended", "percentAttended");
-				break;
-				case "roomUsage":
-					$result = $this->database->query("SELECT * FROM roomUsage ORDER BY id");
-					$columns = array("room", "date", "fill", "scheduled", "capacity");
+					$result = $this->database->query("SELECT * FROM attendance WHERE percentAttended < 50 GROUP BY studentId ORDER BY studentId");
+					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
 				break;
 				default:
-					$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
-					$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
-					$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");
-			
-					if ($result->fetch() === false)
-					{
-						$result = $this->database->prepare("SELECT * FROM roomUsage WHERE room=:room ORDER BY id");
-						$result->execute(['room' => $_input]);
-						$columns = array("room", "date", "fill", "scheduled", "capacity");
-					}
+				$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
+				$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
+				$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+				$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
 			}
 
-			if ($result->fetch() !== false )
-			{
 			$output .= "<tr>";
-			for ($x=0; $x<count($columns); $x++)
+			for ($x=0; $x<count($formatted); $x++)
 			{
-			$output .= "<th>" . $columns[$x] . "</th>";
+				$output .= "<th>" . $formatted[$x] . "</th>";
 			}
 			$output .= "</tr>";
 			
@@ -175,14 +135,129 @@ class Database
 					$output .= "<tr>";
 					for ($x=0; $x<count($columns); $x++)
 					{
+						if ($row[$columns[$x]] == $row["attended"])
+						{
+							$splitAttended = str_split($row[$columns[$x]]);
+							$row[$columns[$x]] = "";
+							for ($y=0; $y<count($splitAttended); $y++)
+							{
+								if ($splitAttended[$y] == 1)
+								{
+									$splitAttended[$y] = "<img src='/images/present.png' alt='1'>";
+								} else {
+									$splitAttended[$y] = "<img src='/images/absent.png' alt='0'>";;
+								}
+								$row[$columns[$x]] .= $splitAttended[$y];
+							}
+						}
 						$output .= "<td>" . $row[$columns[$x]] . "</td>";
 					}
 					$output .= "</tr>";
 				}
 
-			} else {
-				$output = "0 results";
+			return $output;
+		}
+		catch(PDOException $e)
+		{
+			return "Error: " . $e->getMessage();
+		}
+	}
+
+	//getData(): -Selects data from the database by table.
+	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
+	function getData(string $_input)
+	{
+		$output = null;
+		$columns["attended"] = "";
+		$diagram = false;
+
+		try
+		{
+			switch ($_input)
+			{
+				case "students":
+					$result = $this->database->query("SELECT * FROM students ORDER BY id");
+					$columns = array("userId", "first", "last", "courseCode");
+					$formatted = array("User ID", "First Name", "Last Name", "Course");
+				break;
+				case "lectures":
+					$result = $this->database->query("SELECT * FROM lectures ORDER BY id");
+					$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
+					$formatted = array("Date", "Module", "Week", "Trimester", "Lecturer", "Room");
+				break;
+				case "modules":
+					$result = $this->database->query("SELECT * FROM modules ORDER BY id");
+					$columns = array("moduleCode", "name", "courseCode", "weeks");
+					$formatted = array("Module Code", "Module Name", "Course", "Weeks");
+				break;
+				case "attendance":
+					$result = $this->database->query("SELECT * FROM attendance GROUP BY studentId ORDER BY studentId");
+					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
+					$diagram = true;
+				break;
+				case "alerts":
+					$result = $this->database->query("SELECT * FROM attendance WHERE percentAttended < 50 GROUP BY studentId ORDER BY studentId");
+					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
+					$diagram = true;
+				break;
+				case "roomUsage":
+					$result = $this->database->query("SELECT * FROM roomUsage ORDER BY id");
+					$columns = array("room", "date", "fill", "scheduled", "capacity");
+					$formatted = array("Room", "Date", "Fill", "Scheduled", "Capacity");
+				break;
+				default:
+					$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
+					$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
+					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
+					$diagram = true;
+			
+					if ($result->fetch() === false)
+					{
+						$result = $this->database->prepare("SELECT * FROM roomUsage WHERE room=:room ORDER BY id");
+						$result->execute(['room' => $_input]);
+						$columns = array("room", "date", "fill", "scheduled", "capacity");
+						$formatted = array("Room", "Date", "Fill", "Scheduled", "Capacity");
+					}
 			}
+
+			$output .= "<tr>";
+			for ($x=0; $x<count($formatted); $x++)
+			{
+			$output .= "<th>" . $formatted[$x] . "</th>";
+			}
+			$output .= "</tr>";
+			
+				while ($row = $result->fetch())
+				{
+					$output .= "<tr>";
+					for ($x=0; $x<count($columns); $x++)
+					{
+						if ($diagram === true)
+						{
+							if ($row[$columns[$x]] == $row["attended"])
+							{
+								$splitAttended = str_split($row[$columns[$x]]);
+								$row[$columns[$x]] = "";
+								for ($y=0; $y<count($splitAttended); $y++)
+								{
+									if ($splitAttended[$y] == 1)
+									{
+										$splitAttended[$y] = "<img src='/images/present.png' alt='1'>";
+									} else {
+										$splitAttended[$y] = "<img src='/images/absent.png' alt='0'>";
+									}
+									$row[$columns[$x]] .= $splitAttended[$y];
+								}
+							}
+						}
+						$output .= "<td>" . $row[$columns[$x]] . "</td>";
+					}
+					$output .= "</tr>";
+				}
+
 			return $output;
 		}
 		catch(PDOException $e)

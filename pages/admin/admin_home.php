@@ -4,6 +4,12 @@ include_once "db/functions.php";
 include_once "db/configure.php";
 include_once "db/test_users.php";
 
+if(!isset($_SESSION["loggedin"]))
+{
+header("location: /");
+exit;
+}
+
 $database = new Database();
 $configure = new Configure();
 
@@ -63,18 +69,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             $output .= $configure->createAdmins()."<br>";
             $output .= $database->insertAttendance();
         break;
-        // case "insert":
-        //     $output = $database->updateRecord(checkData($_POST["record"]));
-        // break;
         case "view":
             $output = $database->getData(checkData($_POST["record"]));
         break;
-        // case "delete":
-        //     $output = $database->deleteRecord(checkData($_POST["record"]));
-        // break;
-        // case "drop":
-        //     $output = $database->deleteTable();
-        // break;
         case "testUsers":           //Test Users for development purposes only
             $output = TestUsers::addUsers();
             $output = TestUsers::generateUsers();
@@ -87,23 +84,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
         $output = "Invalid option.";
     }
 }
-
-// function checkDb()
-// {
-//     $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-//     if ($database->connect_error){
-//         die("Connection failed: " . $conn->connect_error);	
-//     }
-
-//     //Create or verify DB exists
-//     $sql = "CREATE DATABASE samsdb";
-//     if ($database->query($sql) === TRUE){
-//         $output = "database samsdb created.";
-//     } else {
-//         $output = "Error creating database: " . $database->error;
-//     }
-//     return $output;
-// }
 
 function checkData($data){
 	$data = trim($data);
@@ -215,13 +195,6 @@ function checkData($data){
 
 
 </div>
-
-<?php   //FOR TESTING & DEBUG USE ONLY
-        $conn = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-        if ($conn->connect_error){
-        die("Connection failed: " . $conn->connect_error);
-        } else { echo "Database Status: Connected. ";}
-?>
 
 </body>
 </html>
