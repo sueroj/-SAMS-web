@@ -4,14 +4,13 @@ include_once "pages/admin/db/functions.php";
 include_once "pages/admin/db/configure.php";
 include_once "scripts/user.php";
 
-//Session "checker": Checks if user is already logged into the system,
+//Session check: Checks if user is already logged into the system,
 //automatically proceeds to directory.php if the user is logged in.
-//Commented out for development/debug.
-// if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
-// {
-// 	header("location: /html/directory.php");
-// 	exit;
-// }
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
+{
+	header("location: /html/directory.php");
+	exit;
+}
 
 $user = $passwd = "";
 $error = null;
@@ -23,18 +22,6 @@ $configure->checkDb();
 //Username/password verification, send to directory.php if okay.
 if($_SERVER["REQUEST_METHOD"] == "POST")
 {
-	// if(empty(checkData($_POST["user"]))){
-	// 	$user_err = "Enter Username.";
-	// } else {
-	// 	$user = checkData($_POST["user"]);
-	// }
-
-	// if(empty(checkData($_POST["passwd"]))){
-	// 	$passwd_err = "Enter Username.";
-	// } else {
-	// 	$passwd = checkData($_POST["passwd"]);
-	// }
-
 	if($database->verifyAccount(checkData($_POST["user"]), checkData($_POST["passwd"])))
 	{
 		switch ($_SESSION["account"])
@@ -64,19 +51,6 @@ $data = htmlspecialchars($data);
 return $data;
 }
 
-// function checkDb()
-// {
-//     $database = new mysqli(Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
-//     if ($database->connect_error){
-//         die("Connection failed: " . $database->connect_error);	
-//     }
-
-//     //Create or verify DB exists
-//     $sql = "CREATE DATABASE samsdb";
-//     if ($database->query($sql) === TRUE){
-//         $output = "database samsdb created.";
-// 	}
-// }
 ?>
 
 <!DOCTYPE html>

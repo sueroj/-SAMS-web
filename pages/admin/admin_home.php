@@ -16,6 +16,7 @@ $configure = new Configure();
 $configure->checkDb();
 
 $output = "";
+$displayFilterBtn = null;
 
 if ($_SERVER["REQUEST_METHOD"] == "GET")
 {
@@ -32,6 +33,11 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
         break;
         case "attendance":
             $output = $database->getData("attendance");
+            $displayFilterBtn = "<button class='edit_btn' id='filter_button' onclick='applyFilter()'>Apply Filter</button>";
+        break;
+        case "filter":
+            $output = $database->getFilteredAttendance($_GET["filter"]);
+            $displayFilterBtn = "<button class='edit_btn' id='filter_button' onclick='applyFilter()'>Apply Filter</button>";
         break;
         case "alerts":
             $output = $database->getData("alerts");
@@ -127,6 +133,13 @@ function checkData($data){
         {
             $("#dialog").dialog({ resizable: false, width: 340, modal: true });
         }
+
+        function applyFilter()
+        {
+            $("#filter").dialog({ resizable: false, width: 340, modal: true });
+        }
+
+
     </script>
 </head>
     
@@ -166,6 +179,7 @@ function checkData($data){
             </form>
 
             <button class="edit_btn" onclick="updateAttendance()">Update Attendance</button>
+            <?php echo $displayFilterBtn ?>
             <div id="dialog" title="Update Attendance" hidden>
                 <form action="update_attendance.php" method="POST">
                     <label for="lectureId"><b>Lecture ID</b></label>
@@ -182,6 +196,17 @@ function checkData($data){
                     <button class="submit_btn" type="submit">Submit</button>
                 </form>
             </div>
+
+            <div id="filter" title="Apply Filter" hidden>
+                <form action="apply_filter.php" method="POST">
+                    <label for="filter"><b>Attendance Filter</b></label>
+                    <div class="slidecontainer">
+                        <input name="filter" type="range" min="1" max="100" value="50" class="slider" id="slider">
+                        <span id="sliderVal"></span>
+                    </div>
+                    <button class="submit_btn" type="submit">Submit</button>
+                </form>
+            </div>
         </div>
 
         <div id="data" class="data">
@@ -192,9 +217,17 @@ function checkData($data){
             </table>
         </div>
     </div>
-
-
 </div>
+
+<script>
+var slider = document.getElementById("slider");
+var output = document.getElementById("sliderVal");
+output.innerHTML = slider.value;
+
+slider.oninput = function() {
+  output.innerHTML = this.value;
+}
+</script>
 
 </body>
 </html>

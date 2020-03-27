@@ -73,81 +73,64 @@ class Database
 
 	function getStudent()
 	{
-
 		//Template for getting one or all
-
-
-
 	}
 
 	function getCourse()
 	{
 		//Template for getting one or all
-
-
-
-
 	}
 
 	function getModule()
 	{
 		//Template for getting one or all
-
-
-
-
 	}
 
-	function getAttendance(string $_input)
+	function getFilteredAttendance($_filter)
 	{
 		$output = null;
+		$columns["attended"] = "";
+		$diagram = false;
 
 		try
 		{
-			switch ($_input)
-			{
-				case "attendance":
-					$result = $this->database->query("SELECT * FROM attendance GROUP BY studentId ORDER BY studentId");
-					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
-					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
-				break;
-				case "alerts":
-					$result = $this->database->query("SELECT * FROM attendance WHERE percentAttended < 50 GROUP BY studentId ORDER BY studentId");
-					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
-					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
-				break;
-				default:
-				$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
-				$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
-				$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
-				$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
-			}
+			$result = $this->database->prepare("SELECT * FROM attendance WHERE percentAttended<:percentAttended GROUP BY studentId ORDER BY studentId");
+			$result->execute(['percentAttended' => $_filter]);
+			$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+			$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
+			$diagram = true;
 
+			//Output for column names
 			$output .= "<tr>";
 			for ($x=0; $x<count($formatted); $x++)
 			{
-				$output .= "<th>" . $formatted[$x] . "</th>";
+			$output .= "<th>" . $formatted[$x] . "</th>";
 			}
 			$output .= "</tr>";
 			
+				//Output for database results
 				while ($row = $result->fetch())
 				{
 					$output .= "<tr>";
 					for ($x=0; $x<count($columns); $x++)
 					{
-						if ($row[$columns[$x]] == $row["attended"])
+						//Use images to create the attendance diagram
+						if ($diagram === true)
 						{
-							$splitAttended = str_split($row[$columns[$x]]);
-							$row[$columns[$x]] = "";
-							for ($y=0; $y<count($splitAttended); $y++)
+							if ($row[$columns[$x]] == $row["attended"])
 							{
-								if ($splitAttended[$y] == 1)
+								$splitAttended = str_split($row[$columns[$x]]);
+								$row[$columns[$x]] = "";
+								for ($y=0; $y<count($splitAttended); $y++)
 								{
-									$splitAttended[$y] = "<img src='/images/present.png' alt='1'>";
-								} else {
-									$splitAttended[$y] = "<img src='/images/absent.png' alt='0'>";;
+									if ($splitAttended[$y] == 1)
+									{
+										$splitAttended[$y] = "<img src='/images/present.png' title='Week ".($y+1)."' alt='1'>";
+									} else {
+										$splitAttended[$y] = "<img src='/images/absent.png' title='Week ".($y+1)."' alt='0'>";
+									}
+									$row[$columns[$x]] .= $splitAttended[$y];
 								}
-								$row[$columns[$x]] .= $splitAttended[$y];
 							}
 						}
 						$output .= "<td>" . $row[$columns[$x]] . "</td>";
@@ -161,7 +144,9 @@ class Database
 		{
 			return "Error: " . $e->getMessage();
 		}
+
 	}
+
 
 	//getData(): -Selects data from the database by table.
 	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
@@ -223,6 +208,7 @@ class Database
 					}
 			}
 
+			//Output for column names
 			$output .= "<tr>";
 			for ($x=0; $x<count($formatted); $x++)
 			{
@@ -230,11 +216,13 @@ class Database
 			}
 			$output .= "</tr>";
 			
+				//Output for database results
 				while ($row = $result->fetch())
 				{
 					$output .= "<tr>";
 					for ($x=0; $x<count($columns); $x++)
 					{
+						//Use images to create the attendance diagram
 						if ($diagram === true)
 						{
 							if ($row[$columns[$x]] == $row["attended"])
@@ -245,9 +233,9 @@ class Database
 								{
 									if ($splitAttended[$y] == 1)
 									{
-										$splitAttended[$y] = "<img src='/images/present.png' alt='1'>";
+										$splitAttended[$y] = "<img src='/images/present.png' title='Week ".($y+1)."' alt='1'>";
 									} else {
-										$splitAttended[$y] = "<img src='/images/absent.png' alt='0'>";
+										$splitAttended[$y] = "<img src='/images/absent.png' title='Week ".($y+1)."' alt='0'>";
 									}
 									$row[$columns[$x]] .= $splitAttended[$y];
 								}
@@ -497,11 +485,9 @@ class Database
 	}
 
 	//updateAttendance(): -Calculates attendance whenever a change is made to the attendance table. 
-	//					  -Checks lecture.week column, prevents changes to weeks without lecture data (i.e. an unscheduled lecture).
-	//					  -If lecture data is found, the 12-character attendance string is selected for lectureId and studentId.
-	//					  -The string is split into an array represented by attendance[week], value $_newAttendance updates attendance[week] for $_week.
-	//                    -The array is repackaged into a 12-character string again, named $updatedAttendance, and written into table attendance
-	//				  	  -Meanwhile, the sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
+	//					  -Split attendance string into an array. Value $_newAttendance updates splitAttendance[week] for $_week.
+	//                    -The array is repackaged into a 12-character string and written into table attendance
+	//				  	  -Sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
 	//				 	  -This value equals the percentage of lectures that a student has attended and used to update the attendance.percentAttendance column.
 	function updateAttendance(string $_lectureId, int $_studentId, int $_week, int $_newAttendance)
 	{
@@ -511,26 +497,26 @@ class Database
 		{
 			$sql = $this->database->prepare("SELECT attended, moduleId FROM attendance WHERE lectureId=:lectureId AND studentId=:studentId");
 			$sql->execute(['lectureId' => $_lectureId, 'studentId' => $_studentId]);
-			$result = $sql->fetch(PDO::FETCH_NUM);
-			$attendanceStr = $result[0];
-			$moduleId = $result[1];
+			$result = $sql->fetch();
+			$attendanceStr = $result["attended"];
+			$moduleId = $result["moduleId"];
 
 			if($result !== false)
 			{
-			$attendance = str_split($attendanceStr);
-			$attendance[$_week] = $_newAttendance;
-			$updatedAttendance = $attendance[0];
-			$sumAttendance = (int)$attendance[0];
+			$splitAttendance = str_split($attendanceStr);
+			$splitAttendance[$_week] = $_newAttendance;
+			$attendanceStr = $splitAttendance[0];
+			$sumAttendance = (int)$splitAttendance[0];
 
-			for ($x=1; $x<count($attendance); $x++)
+			for ($x=1; $x<count($splitAttendance); $x++)
 			{
-			$updatedAttendance .= $attendance[$x];
-			$sumAttendance += $attendance[$x];
+			$attendanceStr .= $splitAttendance[$x];
+			$sumAttendance += $splitAttendance[$x];
 			}
 			}
 
 			$sql = $this->database->prepare("UPDATE attendance SET attended=? WHERE moduleId=? AND studentId=?");
-			$sql->execute([$updatedAttendance, $moduleId, $_studentId]);
+			$sql->execute([$attendanceStr, $moduleId, $_studentId]);
 
 			$percentAttended = ($sumAttendance / 12) * 100;
 
