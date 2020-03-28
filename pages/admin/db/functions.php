@@ -1,13 +1,5 @@
 <?php declare(strict_types=1);
-
-//functions.php:-Contains all of the database functions intended to be called by the SAMS web frontend.
-//				-Many more functions will be added as the project progresses.
-//
-//TO DO: -Add deconstructor for closing the Database connection
-//		 -Add anti-SQL injection security measures. Clean up returns.
-//		 -Add more search/return options.
-//		 -Create unique command for listing passwords.
-//
+//functions.php:-Contains all of the database functions intended to be called by the SAMS web application frontend.				
 
 class Database
 {	
@@ -71,22 +63,9 @@ class Database
 		}
 	}
 
-	function getStudent()
-	{
-		//Template for getting one or all
-	}
-
-	function getCourse()
-	{
-		//Template for getting one or all
-	}
-
-	function getModule()
-	{
-		//Template for getting one or all
-	}
-
-	function getFilteredAttendance($_filter)
+	//getFilteredAttendance(): -Selects data from the attendance table,
+	//							  -Filters the percentAttended column by user input 1 - 100.
+	function getFilteredAttendance(int $_filter)
 	{
 		$output = null;
 		$columns["attended"] = "";
@@ -149,7 +128,7 @@ class Database
 
 
 	//getData(): -Selects data from the database by table.
-	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
+	//			 	   -Default uses the attendance table search tool. Which searches for student attendance according to user input.
 	function getData(string $_input)
 	{
 		$output = null;
@@ -205,6 +184,7 @@ class Database
 						$result->execute(['room' => $_input]);
 						$columns = array("room", "date", "fill", "scheduled", "capacity");
 						$formatted = array("Room", "Date", "Fill", "Scheduled", "Capacity");
+						$diagram = false;
 					}
 			}
 
@@ -318,7 +298,7 @@ class Database
 			return $e->getMessage();
 		}
 	}
-	//insertLecture(): Adds a new lecture to the lectures table.
+	//insertLecture(): -Adds a new lecture to the lectures table.
 	function insertLecture(string $_date, string $_module, int $_time, int $_stop, int $_week, int $_trimester, int $_userId, string $_room)
 	{
 		try
@@ -344,6 +324,7 @@ class Database
 		}
 	}
 
+    //insertModule(): -Adds a new module to the modules table.
 	function insertModule(string $_moduleCode, string $_name, string $_courseCode, int $_weeks)
 	{
 		try
@@ -365,6 +346,7 @@ class Database
 		}
 	}
 
+	//insertCourse(): -Adds a new course to the courses table.
 	function insertCourse(string $_courseCode, string $_name)
 	{
 		try
@@ -384,7 +366,7 @@ class Database
 		}
 	}
 
-	//insertRoom: Adds a new room to the rooms table.
+	//insertRoom(): -Adds a new room to the rooms table.
 	function insertRoom(string $_roomName, int $_roomCapacity)
     {
 		try
@@ -404,7 +386,7 @@ class Database
 		}
     }
 
-	//updateRoomFill: Calculates room Fill column.
+	//updateRoomFill(): -Calculates room Fill column.
 	function updateRoomFill()
 	{
 		try
@@ -443,10 +425,10 @@ class Database
 		}
 	}
 
-	//updateroomUsage():  Adds rooms the roomUsage table, with column imported from the rooms table and lectures table.
-	//					  The attendance.studentId column is counted while grouped by lectureId. The count result is equal
-	//					  to the number of students scheduled for a module lecture. This value is used to update the
-	//					  roomUsage.scheduled column.
+	//updateroomUsage():  -Adds rooms the roomUsage table, with column imported from the rooms table and lectures table.
+	//					  -The attendance.studentId column is counted while grouped by lectureId. The count result is equal
+	//					   to the number of students scheduled for a module lecture. This value is used to update the
+	//					   roomUsage.scheduled column.
 	function updateRoomUsage()
 	{
 
@@ -551,8 +533,7 @@ class Database
 	}
 
 	//getAlerts(): -Used by the admin_home.php page to query the database for any attendance records < 50%.
-	//			   -True: show Alert button on admin home.
-	//			   -False: hide Alert button on admin home.
+	//			   -True: show Alert button on admin home, False: hide Alert button on admin home.
 	function getAlerts()
 	{
 		$setAlert = "none";

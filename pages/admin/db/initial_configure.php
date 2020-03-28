@@ -1,4 +1,7 @@
 <?php
+//initial_configure.php: -*****FOR DEVELOPMENT USE ONLY*****
+//                       -This is used for setting up new systems with the database configuration 
+//                        required for the SAMS web application demonstration.
 include_once "test_users.php";
 include_once "configure.php";
 include_once "functions.php";
@@ -18,6 +21,7 @@ echo $configure->createLecturers() . "<br>";
 echo $configure->createAdmins() . "<br>";
 
 echo TestUsers::addUsers() . "<br>";
+echo TestUsers::generateUsers();
 echo $database->insertAttendance() . "<br>";
 echo TestUsers::generateAttendance() . "<br>";
 

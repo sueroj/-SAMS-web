@@ -3,7 +3,7 @@ include_once "static_data.php";
 include_once "globals.php";
 include_once "functions.php";
 // Configure.php -Used to configure the samsdb database. 
-//               -Connects to database and creates all of the tables used in the web application
+//               -Connects to database and creates all of the tables used in the web application.
 //               -Also loads initial static data used for demonstration.
 //               -Referenced by admin_home.php and initial_configure.php (via index.php <Initial Config> link).
 
@@ -40,11 +40,7 @@ class Configure
 		catch(PDOException $e){}
     }
 
-    //Create attendance table: -lectureId = lectures.id
-    //                         -lectureCode = lectures.date . lectures.moduleCode
-    //                         -moduleId = lectures.moduleCode . lectures.trimester
-    //                         -attended = 12-character string; stores attendance record for a module when split. Each character represents a different week.
-    //                         -percentAttended = attended / week * 100.
+    //Create attendance table.
     function createAttendance()
     {
         try 
@@ -70,7 +66,7 @@ class Configure
         }
     }
 
-    //Create Lectures table
+    //Create Lectures table.
     function createLectures()
     {
         $dbFunctions = new Database();
@@ -117,7 +113,7 @@ class Configure
         }
     }
 
-    //Create modules table
+    //Create modules table.
     function createModules()
     {
         $dbFunctions = new Database();
@@ -163,8 +159,6 @@ class Configure
             id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             courseCode VARCHAR(4),
             name VARCHAR(30),
-            start_date DATE,
-            end_date DATE,
             CONSTRAINT UC_Course UNIQUE (courseCode, name)
             )";
             $this->database->exec($sql);
@@ -312,18 +306,28 @@ class Configure
         }
     }
 
-    //Connect to Database.
+    //Try to connect to samsdb Database. If no database found, try to create new one.
     function connectDb()
     {
         try {
 			$pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN  . ";dbname=" . Globals::SERVER_DB, Globals::SERVER_USER, Globals::SERVER_PWD);
-			// set the PDO error mode to exception
 			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 			$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 			}
 		catch(PDOException $e)
 			{
-			echo "Connection failed: " . $e->getMessage();
+            echo "Database samsdb was not detected. Creating new database.";
+            try
+            {
+                $pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN, Globals::SERVER_USER, Globals::SERVER_PWD);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+                $sql = "CREATE DATABASE samsdb";
+    
+                $pdo->exec($sql);
+                return "Database samsdb created.<br>";
+            }
+            catch(PDOException $e){}
 			}
 		return $pdo;
     }

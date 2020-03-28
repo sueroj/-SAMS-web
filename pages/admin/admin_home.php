@@ -60,35 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
 
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
-    switch (checkData($_POST["selection"]))
-	{
-        case "configure": 
-            $output = $database->createDb()."<br>";
-            $output .= $configure->createAttendance()."<br>";
-            $output .= $configure->createLectures()."<br>";
-            $output .= $configure->createModules()."<br>";
-            $output .= $configure->createCourses()."<br>";
-            $output .= $configure->createRooms()."<br>";
-            $output .= $configure->createRoomUsage()."<br>";
-            $output .= $configure->createStudents()."<br>";
-            $output .= $configure->createLecturers()."<br>";
-            $output .= $configure->createAdmins()."<br>";
-            $output .= $database->insertAttendance();
-        break;
-        case "view":
-            $output = $database->getData(checkData($_POST["record"]));
-        break;
-        case "testUsers":           //Test Users for development purposes only
-            $output = TestUsers::addUsers();
-            $output = TestUsers::generateUsers();
-            $database->insertAttendance();
-        break;
-        case "testAttendance":           //Test Attendance for development purposes only
-            $output = TestUsers::generateAttendance();
-        break;
-        default:
-        $output = "Invalid option.";
-    }
+        $output = ($_POST["view"] !== "") ? $database->getData(checkData($_POST["view"])) : "Invalid option.";
 }
 
 function checkData($data){
@@ -168,13 +140,7 @@ function checkData($data){
     <div>
         <div class="input_form">
             <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="POST">
-                    <input type="text" name="record" placeholder="Search">
-                    <select name="selection">
-                        <option value="view">View Data</option>
-                        <option value="configure">Configure Database</option>             
-                        <option value="testUsers">Create Test Users</option>
-                        <option value="testAttendance">Generate Attendance</option>
-                    </select>
+                    <input type="text" name="view" placeholder="Search">
                     <button class="submit_btn" type="submit">Submit</button>
             </form>
 

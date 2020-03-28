@@ -1,4 +1,5 @@
 <?php
+//Global MariaDB login credentials.
 
 class Globals
 {

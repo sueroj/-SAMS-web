@@ -1,4 +1,6 @@
 <?php declare(strict_types=1);
+//static_data.php: -*****FOR DEVELOPMENT USE ONLY*****
+//                 -Used to import static demonstration data to the samsdb database.
 
 class StaticData
 {

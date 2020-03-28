@@ -4,20 +4,31 @@ include_once "pages/admin/db/functions.php";
 include_once "pages/admin/db/configure.php";
 include_once "scripts/user.php";
 
+$configure = new Configure();
+$configure->checkDb();
+
 //Session check: Checks if user is already logged into the system,
-//automatically proceeds to directory.php if the user is logged in.
+//automatically proceeds to appropriate homepage if the user is logged in.
 if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
 {
-	header("location: /html/directory.php");
-	exit;
+	switch ($_SESSION["account"])
+	{
+		case User::Student:
+			header("location: /pages/student/student_home.php");
+			break;
+		case User::Lecturer:
+			header("location: /pages/lecturer/lecturer_home.php");
+			break;
+		case User::Admin:
+			header("location: /pages/admin/admin_home.php?view=students");
+			break;
+	}
+	exit();
 }
 
 $user = $passwd = "";
 $error = null;
 $database = new Database();
-$configure = new Configure();
-
-$configure->checkDb();
 
 //Username/password verification, send to directory.php if okay.
 if($_SERVER["REQUEST_METHOD"] == "POST")
@@ -36,7 +47,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 				header("location: /pages/admin/admin_home.php?view=students");
 				break;
 		}
-		die();
+		exit();
 	} else {
 		$error = "Invalid username and/or password.";
 	}
