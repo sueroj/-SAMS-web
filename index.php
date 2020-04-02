@@ -1,30 +1,30 @@
 <?php
 session_start();
-include_once "pages/admin/db/functions.php";
-include_once "pages/admin/db/configure.php";
-include_once "scripts/user.php";
+require_once "common/functions.php";
+require_once "common/configure.php";
+require_once "common/user.php";
 
 $configure = new Configure();
 $configure->checkDb();
 
 //Session check: Checks if user is already logged into the system,
 //automatically proceeds to appropriate homepage if the user is logged in.
-if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
-{
-	switch ($_SESSION["account"])
-	{
-		case User::Student:
-			header("location: /pages/student/student_home.php");
-			break;
-		case User::Lecturer:
-			header("location: /pages/lecturer/lecturer_home.php");
-			break;
-		case User::Admin:
-			header("location: /pages/admin/admin_home.php?view=students");
-			break;
-	}
-	exit();
-}
+// if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true)
+// {
+// 	switch ($_SESSION["account"])
+// 	{
+// 		case User::Student:
+// 			header("location: /pages/student/student_home.php");
+// 			break;
+// 		case User::Lecturer:
+// 			header("location: /pages/lecturer/lecturer_home.php");
+// 			break;
+// 		case User::Admin:
+// 			header("location: /pages/admin/admin_home.php?view=students");
+// 			break;
+// 	}
+// 	exit();
+// }
 
 $user = $passwd = "";
 $error = null;
@@ -41,7 +41,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST")
 				header("location: /pages/student/student_home.php");
 				break;
 			case User::Lecturer:
-				header("location: /pages/lecturer/lecturer_home.php");
+				header("location: /pages/lecturer/lecturer_home.php?view=modules");
 				break;
 			case User::Admin:
 				header("location: /pages/admin/admin_home.php?view=students");
@@ -81,11 +81,11 @@ return $data;
     
 	<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
 	  <div class="textbox">
-	    <label for="user"><b>Username</b></label>
-		<input type="text" placeholder="Enter Username" name="user" required>
+	    <label for="user"><b>User ID</b></label>
+		<input id="userId" type="text" placeholder="Enter User ID" name="user" required>
 	
 	    <label for="passwd"><b>Password</b></label>
-	    <input type="password" placeholder="Enter Password" name="passwd" required>
+	    <input id="passwd" type="password" placeholder="Enter Password" name="passwd" required>
 	    
 		<label class="password"><a href="pages/new_user.html">New User?</a></label>
 		
@@ -97,4 +97,13 @@ return $data;
 	<a href="pages/admin/db/initial_configure.php">Initial Config</a>
 
 </body>
+<script>
+// var userId = document.getElementById("userId");
+// var passwd = document.getElementById("passwd");
+// output.innerHTML = slider.value;
+
+// slider.oninput = function() {
+//   output.innerHTML = this.value;
+// }
+</script>
 </html>

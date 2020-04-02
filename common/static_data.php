@@ -1,4 +1,6 @@
 <?php declare(strict_types=1);
+//static_data.php: -*****FOR DEVELOPMENT USE ONLY*****
+//                 -Used to import static demonstration data to the samsdb database.
 
 class StaticData
 {
@@ -6,19 +8,21 @@ class StaticData
     const roomCapacity = array(20, 25, 25, 30, 30, 15, 20);
 
 
-    const moduleCode = array("CSS", "DWA", "SI", "RM", "CS", "ZE", "ML", "S101");
+    const moduleCode = array("CSS", "DWA", "SI", "RM", "CS", "ZE", "ML", "S101", "WAS", "AP");
 
     const moduleName = array("Computer Systems and Servers",
                             "Developing Web Applications",
                             "Software Implementation",
                             "Research Methods",
-                            "CyberSecurity",
+                            "Secure Systems",
                             "Zoo Ethics",
                             "Machine Learning",
-                            "Stretching 101"
+                            "Stretching 101",
+                            "Web Application Security",
+                            "Advanced Programming"
                             );
     
-    const moduleCourseCode = array("ICT", "CS", "AI", "ICT", "CS", "AH", "AI", "SS");
+    const moduleCourseCode = array("ICT", "ICT", "ICT", "ICT", "ICT", "AH", "AI", "SS", "CS", "CS");
 
     const courseName = array("Information and Computing Technology",
                             "Computer Science",

@@ -1,14 +1,13 @@
 <?php
 session_start();
-include_once "db/functions.php";
-include_once "db/configure.php";
-include_once "db/test_users.php";
-
 if(!isset($_SESSION["loggedin"]))
 {
 header("location: /");
 exit;
 }
+require_once $_SERVER['DOCUMENT_ROOT'] . "/common/functions.php";
+require_once $_SERVER['DOCUMENT_ROOT'] . "/common/configure.php";
+
 
 $database = new Database();
 $configure = new Configure();
@@ -156,7 +155,7 @@ function checkData($data){
                         <input type="text" name="week" required>
                     <label for="newAttendance"><b>Attendance Status</b><br></label>
                         <select class="attendance_select" name="newAttendance">
-                            <option value="attended">Attended</option>
+                            <option value="attended">Present</option>
                             <option value="absent">Absent</option>
                         </select><br>
                     <button class="submit_btn" type="submit">Submit</button>

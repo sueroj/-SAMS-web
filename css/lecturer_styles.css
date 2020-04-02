@@ -54,8 +54,7 @@ width:200px;
 .content {
     padding-top: 80px;
     display: flex;
-    flex-direction: row;
-    
+    flex-direction: row; 
 }
 
 .v_nav_bar{
