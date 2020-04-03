@@ -94,7 +94,7 @@ return $data;
 	    
 	  </div>
 	</form>
-	<a href="pages/admin/db/initial_configure.php">Initial Config</a>
+	<a href="common/initial_configure.php">Initial Config</a>
 
 </body>
 <script>
