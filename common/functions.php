@@ -21,8 +21,21 @@ class Database
 
 	//verifyAccount(): -Used to verify username and password with the database.
 	//				   -If authenticated, a session is started and the user is redirected from login page to their respective account type homepage.
-    function verifyAccount(int $_userId, string $_passwd)
+    function verifyAccount($_userId, string $_passwd)
 	{
+		//Filter input validation: input must be between 6 - 8 digits.
+		$options = array(
+			'options' => array(
+				'min_range' => 99999,
+				'max_range' => 100000000
+			)
+		);
+
+		if (filter_var($_userId, FILTER_VALIDATE_INT, $options) === false)
+		{
+			return false;
+		}
+			
 		$field = null;
 		try
 		{
@@ -390,10 +403,7 @@ class Database
 				default:
 					$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId GROUP BY studentId, moduleId ORDER BY studentId, lectureId");
 					$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
-					$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
-					$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
-					$diagram = true;
-			
+
 					if ($result->fetch() === false)
 					{
 						$result = $this->database->prepare("SELECT * FROM roomUsage WHERE room=:room ORDER BY id");
@@ -401,6 +411,14 @@ class Database
 						$columns = array("room", "date", "fill", "scheduled", "capacity");
 						$formatted = array("Room", "Date", "Fill", "Scheduled", "Capacity");
 						$diagram = false;
+					}
+					else
+					{
+						$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId GROUP BY studentId, moduleId ORDER BY studentId, lectureId");
+						$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
+						$columns = array("lectureId", "moduleId", "studentId", "attended", "percentAttended");
+						$formatted = array("Lecture ID", "Module ID", "Student ID", "Weeks Attended", "% Attended");
+						$diagram = true;
 					}
 			}
 

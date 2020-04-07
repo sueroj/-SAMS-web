@@ -95,6 +95,8 @@ return $data;
 	  </div>
 	</form>
 	<a href="common/initial_configure.php">Initial Config</a>
+	<br>
+	<a href="common/application_test.php">Run Tests</a>
 
 </body>
 <script>
