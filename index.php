@@ -87,7 +87,7 @@ return $data;
 	    <label for="passwd"><b>Password</b></label>
 	    <input id="passwd" type="password" placeholder="Enter Password" name="passwd" required>
 	    
-		<label class="password"><a href="pages/new_user.html">New User?</a></label>
+		<label class="password"><a href="pages/new_user.php">New User?</a></label>
 		
 		<label class="test"><?php echo $error; ?></label>
 	    <button type="submit" class="button">Login</button>

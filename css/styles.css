@@ -5,7 +5,7 @@
         body {
 	 	background-color:#eaecee;
 	 	font-family:century;
-	 	}
+		 }
 	 	
 		.global_nav_bar{
 		padding-left:16px;
@@ -34,6 +34,8 @@
 		font-size:56px;
 		font-family:Century;
 		width:200px;
+		text-decoration: none;
+		color: black;
 		}
 		
 		div{

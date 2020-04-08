@@ -33,6 +33,10 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
         case "attendance":
             $output = $database->getData("attendance");
             $displayFilterBtn = "<button class='edit_btn' id='filter_button' onclick='applyFilter()'>Apply Filter</button>";
+            if (checkData($_GET["record"]) == "n")
+            {
+                $output = "Attendance record not found.";
+            }
         break;
         case "filter":
             $output = $database->getFilteredAttendance($_GET["filter"]);
@@ -67,6 +71,17 @@ function checkData($data){
 	$data = stripslashes($data);
 	$data = htmlspecialchars($data);
 	return $data;
+}
+
+
+
+function selectWeek()
+{
+    for ($x=1; $x<13; $x++)
+    {
+        $week .= "<option value='$x'>$x</option>";
+    }
+    return $week;
 }
 
 ?>
@@ -131,7 +146,7 @@ function checkData($data){
         <a class="v_nav" href="admin_home.php?view=students">Students</a>
         <a class="v_nav" href="admin_home.php?view=lectures">Lectures</a>
         <a class="v_nav" href="admin_home.php?view=modules">Modules</a>
-        <a class="v_nav" href="admin_home.php?view=attendance">Attendance</a>
+        <a class="v_nav" href="admin_home.php?view=attendance&record=y">Attendance</a>
         <a class="v_nav" href="admin_home.php?view=rooms">Rooms</a>
         <a class="v_nav_pulser" id="pulser_button" href="admin_home.php?view=alerts" hidden>Alerts</a>
     </nav>
@@ -152,7 +167,9 @@ function checkData($data){
                     <label for="studentId"><b>Student ID</b></label>
                         <input type="text" name="studentId" required>
                     <label for="week"><b>Week</b></label>
-                        <input type="text" name="week" required>
+                       <select class="attendance_select" name="week">
+                            <?php echo selectWeek(); ?>
+                        </select><br>
                     <label for="newAttendance"><b>Attendance Status</b><br></label>
                         <select class="attendance_select" name="newAttendance">
                             <option value="attended">Present</option>

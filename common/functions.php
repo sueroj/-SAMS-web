@@ -775,7 +775,7 @@ class Database
 	//                    -The array is repackaged into a 12-character string and written into table attendance
 	//				  	  -Sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
 	//				 	  -This value equals the percentage of lectures that a student has attended and used to update the attendance.percentAttendance column.
-	function updateAttendance(string $_lectureId, int $_studentId, int $_week, int $_newAttendance)
+	function updateAttendance(int $_lectureId, int $_studentId, int $_week, int $_newAttendance)
 	{
 		$_week = $_week - 1;
 
@@ -856,6 +856,34 @@ class Database
 			}
 		}
 		return $setAlert;
+	}
+
+	//verifyAttendance(): -Used by update_attendance.php to verify if an attendance record exists before updating.
+	function verifyAttendance(int $_lectureId, int $_userId)
+	{
+		try
+		{
+			$result = $this->database->prepare("SELECT lectureId FROM attendance WHERE lectureId=?");
+			$result->execute([$_lectureId]);
+			$lectureIdResult = $result->fetch();
+
+			$result = $this->database->prepare("SELECT studentId FROM attendance WHERE studentId=?");
+			$result->execute([$_userId]);
+			$studentIdResult = $result->fetch();
+
+			if ($lectureIdResult !== false && $studentIdResult !== false)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch(PDOException $e)
+		{
+			echo "Error: " . $e->getMessage();
+		}
 	}
 
 	//Connect to Database
