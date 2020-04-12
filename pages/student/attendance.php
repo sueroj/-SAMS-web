@@ -102,8 +102,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
             <tr>
                 <th>Week</th>
                 <th>Date</th>
-                <th>Time</th>
-                <th>Room</th>
+                <th>Start</th>
+                <th>Stop</th>
                 <th>Attendance</th>
             </tr>
             <!-- Draw rest of table data & buttons -->
