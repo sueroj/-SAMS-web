@@ -99,13 +99,4 @@ return $data;
 	<a href="common/application_test.php">Run Tests</a>
 
 </body>
-<script>
-// var userId = document.getElementById("userId");
-// var passwd = document.getElementById("passwd");
-// output.innerHTML = slider.value;
-
-// slider.oninput = function() {
-//   output.innerHTML = this.value;
-// }
-</script>
 </html>

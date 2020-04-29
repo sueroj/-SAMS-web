@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 require_once "globals.php";
 
-//functions.php:-Contains all of the database functions intended to be called by the SAMS web application frontend.
+//functions.php: -Core database functions file intended to be called by the SAMS web application frontend.
 
 class Database
 {	
@@ -19,8 +19,9 @@ class Database
 		$this->database = null;
 	}
 
-	//verifyAccount(): -Used to verify username and password with the database.
+	//verifyAccount(): -Verify username and password with the database.
 	//				   -If authenticated, a session is started and the user is redirected from login page to their respective account type homepage.
+	//Reference: [/] index.php, [/common] application_test.php
     function verifyAccount($_userId, string $_passwd)
 	{
 		//Filter input validation: input must be between 6 - 8 digits.
@@ -82,6 +83,8 @@ class Database
 		}
 	}
 
+	//getModules(): -Get a Module for a select tag; return [moduleCode, name] as options.
+	//Reference: [/lecturer] lecturer_home.php
 	function getModules()
 	{
 		$output = null;
@@ -103,6 +106,8 @@ class Database
 		}
 	}
 
+	//getModules(): -Get a Classes for a select tag; return [moduleCode] as options.
+	//References: [/lecturer] lecturer_home.php
 	function getClasses()
 	{
 		$output = null;
@@ -125,6 +130,9 @@ class Database
 			echo "Error: " . $e->getMessage();
 		}
 	}
+
+	//viewModule(): -View module attendance for a student using [moduleCode]; return [studentId, percentAttended].
+	//Reference: [/lecturer] lecturer_home.php
 	function viewModule($_moduleCode)
 	{
 		$output = null;
@@ -148,6 +156,8 @@ class Database
 		}
 	}
 	
+	//getModuleName(): -Get full module name using [moduleCode]; return [name].
+	//Reference: [/student] attendance.php
 	function getModuleName($_moduleCode)
 	{
 		$output = null;
@@ -176,6 +186,8 @@ class Database
 		}
 	}
 
+	//getLecture(): -Get lecture details using [week, moduleCode]; return [date, start_time, stop_time].
+	//Reference: [/student] attendance.php
 	function getLecture($_week, $_moduleCode)
 	{
 		$output = null;
@@ -208,6 +220,8 @@ class Database
 		}
 	}
 
+	//getLectureId(): -Get LectureId using [moduleCode, trimester]; return [lectureId].
+	//Reference: [/student] attendance.php
 	function getLectureId(string $_moduleCode, string $_trimester)
 	{
 		$output = null;
@@ -237,6 +251,9 @@ class Database
 		}
 	}
 
+	//getStudentAttendance: -Get student attendance string graphic using [moduleCode, trimester, userId], if one exists.
+	//						-returns [attended, percentAttended], if none ["No Attendance Record Found", "N/A"]
+	//Reference: [/student] attendance.php, student_home.php
 	function getStudentAttendance(string $_moduleCode, string $_trimester, int $_userId)
 	{
 		$output = null;
@@ -288,7 +305,8 @@ class Database
 	}
 
 	//getFilteredAttendance(): -Selects data from the attendance table,
-	//							  -Filters the percentAttended column by user input 1 - 100.
+	//							-Filters the percentAttended column by user input 1 - 100.
+	//Reference: [/admin] admin_home.php
 	function getFilteredAttendance(int $_filter)
 	{
 		$output = null;
@@ -350,9 +368,9 @@ class Database
 
 	}
 
-
 	//getData(): -Selects data from the database by table.
-	//			 	   -Default uses the attendance table search tool. Which searches for student attendance according to user input.
+	//			 -Default uses the attendance table search tool. Which searches for student attendance according to user input.
+	//Reference: [/admin] admin_home.php [/lecturer] lecture_home.php
 	function getData(string $_input)
 	{
 		$output = null;
@@ -469,76 +487,6 @@ class Database
 		
 	}
 
-	function getDataLecturer(string $_input)
-	{
-		$output = null;
-
-		try
-		{
-			switch ($_input)
-			{
-			
-				case "lectures":
-					$result = $this->database->query("SELECT * FROM lectures ORDER BY id");
-					$columns = array("date", "moduleCode", "week", "trimester", "lecturer", "room");
-				break;
-				case "modules":
-					$result = $this->database->query("SELECT * FROM modules ORDER BY id");
-					$columns = array("moduleCode", "name", "courseCode", "weeks");
-				break;
-				case "attendance":
-					$result = $this->database->query("SELECT DISTINCT lectureId, moduleId, studentId, attended, percentAttended FROM attendance ORDER BY studentId");
-					$columns = array("lectureId", "studentId", "moduleId", "attended", "percentAttended");
-				break;
-
-				case "studentattend":
-					$result = $this->database->query("SELECT DISTINCT moduleId, studentId, attended, percentAttended FROM attendance ORDER BY studentId");
-					$columns = array("studentId", "moduleId", "attended", "percentAttended");
-				break;
-				/*default:
-					$result = $this->database->prepare("SELECT * FROM attendance WHERE studentId=:studentId OR moduleId=:moduleId ORDER BY id");
-					$result->execute(['studentId' => $_input, 'moduleId' => $_input]);
-					$columns = array("lectureId", "lectureCode", "moduleId", "studentId", "attended", "percentAttended");*/
-			
-					if ($result->fetch() === false)
-					{
-						$result = $this->database->prepare("SELECT * FROM roomUsage WHERE room=:room ORDER BY id");
-						$result->execute(['room' => $_input]);
-						$columns = array("room", "date", "fill", "scheduled", "capacity");
-					}
-			}
-
-			if ($result->fetch() !== false )
-			{
-			$output .= "<tr>";
-			for ($x=0; $x<count($columns); $x++)
-			{
-			$output .= "<th>" . $columns[$x] . "</th>";
-			}
-			$output .= "</tr>";
-			
-				while ($row = $result->fetch())
-				{
-					$output .= "<tr>";
-					for ($x=0; $x<count($columns); $x++)
-					{
-						$output .= "<td>" . $row[$columns[$x]] . "</td>";
-					}
-					$output .= "</tr>";
-				}
-
-			} else {
-				$output = "0 results";
-			}
-			return $output;
-		}
-		catch(PDOException $e)
-		{
-			return "Error: " . $e->getMessage();
-		}
-		
-	}
-
 	//insertStudent(): Adds a new student to the students table.
 	function insertStudent(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
@@ -565,6 +513,7 @@ class Database
 
 	//insertUser(): -Adds a new user to their respective table (students, lecturers, admins) based on account type ($_acct). 
 	//				-3 types are Student, Lecturer, or Admin.
+	//Reference: [/common] student.php, test_users.php
 	function insertUser(int $_userId, string $_first, string $_last, string $_course, int $_acct, string $_passwd)
 	{
 		try
@@ -602,7 +551,9 @@ class Database
 			return $e->getMessage();
 		}
 	}
+
 	//insertLecture(): -Adds a new lecture to the lectures table.
+	//Reference: [/common] configure.php
 	function insertLecture(string $_date, string $_module, int $_time, int $_stop, int $_week, int $_trimester, int $_userId, string $_room)
 	{
 		try
@@ -628,7 +579,8 @@ class Database
 		}
 	}
 
-    //insertModule(): -Adds a new module to the modules table.
+	//insertModule(): -Adds a new module to the modules table.
+	//Reference: [/common] configure.php
 	function insertModule(string $_moduleCode, string $_name, string $_courseCode, int $_weeks)
 	{
 		try
@@ -651,6 +603,7 @@ class Database
 	}
 
 	//insertCourse(): -Adds a new course to the courses table.
+	//Reference: [/common] configure.php
 	function insertCourse(string $_courseCode, string $_name)
 	{
 		try
@@ -671,6 +624,7 @@ class Database
 	}
 
 	//insertRoom(): -Adds a new room to the rooms table.
+	//Reference: [/common] configure.php
 	function insertRoom(string $_roomName, int $_roomCapacity)
     {
 		try
@@ -691,6 +645,7 @@ class Database
     }
 
 	//updateRoomFill(): -Calculates room Fill column.
+	//Reference: [/common] initial_configure.php, [/admin] admin_home.php
 	function updateRoomFill()
 	{
 		try
@@ -733,6 +688,7 @@ class Database
 	//					  -The attendance.studentId column is counted while grouped by lectureId. The count result is equal
 	//					   to the number of students scheduled for a module lecture. This value is used to update the
 	//					   roomUsage.scheduled column.
+	//Reference: [/common] initial_configure.php, [/admin] admin_home.php
 	function updateRoomUsage()
 	{
 
@@ -775,6 +731,7 @@ class Database
 	//                    -The array is repackaged into a 12-character string and written into table attendance
 	//				  	  -Sum of the string is stored as $sumAttendance and divided by lecture week * 100. 
 	//				 	  -This value equals the percentage of lectures that a student has attended and used to update the attendance.percentAttendance column.
+	//Reference: [/common] test_users.php, [/admin] update_attendance.php, [/lecturer] update_attendance.php, [/student] attendance.php
 	function updateAttendance(int $_lectureId, int $_studentId, int $_week, int $_newAttendance)
 	{
 		$_week = $_week - 1;
@@ -817,6 +774,7 @@ class Database
 
 	//insertAttendance(): Adds new Attendance records automatically into attendance table based on information from 
 	//					  the lectures, students, and modules tables.
+	//Reference: [/common] initial_configure.php, student.php
 	function insertAttendance()
 	{
 		try
@@ -838,6 +796,7 @@ class Database
 
 	//getAlerts(): -Used by the admin_home.php page to query the database for any attendance records < 50%.
 	//			   -True: show Alert button on admin home, False: hide Alert button on admin home.
+	//Reference: [/admin] get_alerts.php
 	function getAlerts()
 	{
 		$setAlert = "none";
@@ -859,6 +818,7 @@ class Database
 	}
 
 	//verifyAttendance(): -Used by update_attendance.php to verify if an attendance record exists before updating.
+	//Reference: [/admin] update_attendance.php
 	function verifyAttendance(int $_lectureId, int $_userId)
 	{
 		try

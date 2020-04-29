@@ -17,6 +17,7 @@ $configure->checkDb();
 $output = "";
 $displayFilterBtn = null;
 
+//Master database switch, calls functions from functions.php
 if ($_SERVER["REQUEST_METHOD"] == "GET")
 {
 	switch (checkData($_GET["view"]))
@@ -61,11 +62,13 @@ if ($_SERVER["REQUEST_METHOD"] == "GET")
 	}
 }
 
+//Post used for search queries.
 if ($_SERVER["REQUEST_METHOD"] == "POST")
 {
         $output = ($_POST["view"] !== "") ? $database->getData(checkData($_POST["view"])) : "Invalid option.";
 }
 
+//Data input check
 function checkData($data){
 	$data = trim($data);
 	$data = stripslashes($data);
@@ -73,8 +76,7 @@ function checkData($data){
 	return $data;
 }
 
-
-
+//Week select generator for Update Attendance dialog box.
 function selectWeek()
 {
     for ($x=1; $x<13; $x++)
@@ -101,6 +103,7 @@ function selectWeek()
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
+        //Get alert status for pulser button
         function getAlerts()
         {
             var pulser = document.getElementById("pulser_button");
