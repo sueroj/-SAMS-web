@@ -58,7 +58,7 @@ class Database
 			
 			
 			if ($field !== false){
-				if (md5($_passwd) == $field["passwd"]){
+				if (password_verify($_passwd, $field["passwd"])){
 					session_start();
 					$_SESSION["loggedin"] = true;
 					$_SESSION["userId"] = $_userId;
@@ -851,8 +851,9 @@ class Database
 	{
 		try {
 			$pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN  . ";dbname=" . Globals::SERVER_DB, Globals::SERVER_USER, Globals::SERVER_PWD);
-			// set the PDO error mode to exception
+			// set the PDO error mode to exception - ERRMODE_SILENT for demo build, ERRMODE_EXCEPTION for dev
 			$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			//$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_SILENT);
 			$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 			}
 		catch(PDOException $e)

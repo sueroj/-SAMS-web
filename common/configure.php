@@ -245,7 +245,7 @@ class Configure
             last VARCHAR(30) NOT NULL,
             courseCode VARCHAR(30) NOT NULL,
             account INT(1) UNSIGNED,
-            passwd VARCHAR(40) NOT NULL
+            passwd VARCHAR(255) NOT NULL
             )";
             $this->database->exec($sql);
             
@@ -269,7 +269,7 @@ class Configure
             first VARCHAR(30) NOT NULL,
             last VARCHAR(30) NOT NULL,
             account INT(1) UNSIGNED,
-            passwd VARCHAR(40) NOT NULL
+            passwd VARCHAR(255) NOT NULL
             )";
             $this->database->exec($sql);
             
@@ -293,7 +293,7 @@ class Configure
             first VARCHAR(30) NOT NULL,
             last VARCHAR(30) NOT NULL,
             account INT(1) UNSIGNED,
-            passwd VARCHAR(40) NOT NULL
+            passwd VARCHAR(255) NOT NULL
             )";
             $this->database->exec($sql);
             

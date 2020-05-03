@@ -20,11 +20,11 @@ class TestUsers
 
         for($x=0; $x<4; $x++)
         {
-            $database->insertUser($id[$x], $first[$x], $last[$x], $course[$x], User::Student, md5($passwd[$x]));
+            $database->insertUser($id[$x], $first[$x], $last[$x], $course[$x], User::Student, password_hash($passwd[$x], PASSWORD_DEFAULT));
         }
 
-        $database->insertUser($id[5], $first[5], $last[5], $course[5], User::Lecturer, md5($passwd[5]));
-        $database->insertUser($id[6], $first[6], $last[6], $course[6], User::Admin, md5($passwd[6]));
+        $database->insertUser($id[5], $first[5], $last[5], $course[5], User::Lecturer, password_hash($passwd[5], PASSWORD_DEFAULT));
+        $database->insertUser($id[6], $first[6], $last[6], $course[6], User::Admin, password_hash($passwd[6], PASSWORD_DEFAULT));
 
         return "Test users added.";
     }
@@ -40,7 +40,7 @@ class TestUsers
 
         for($x=0; $x<30; $x++)
         {
-            $database->insertUser($id++, $first[rand(0,9)], $last[rand(0,9)], $course[rand(0,4)], User::Student, md5("abcd"));
+            $database->insertUser($id++, $first[rand(0,9)], $last[rand(0,9)], $course[rand(0,4)], User::Student, password_hash("abcd", PASSWORD_DEFAULT));
         }
     }
     

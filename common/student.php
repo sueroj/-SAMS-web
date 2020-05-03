@@ -16,7 +16,7 @@ class Student extends User
         $this->first = $_first;
         $this->last = $_last;
         $this->course = $_course;
-        $this->passwd = md5($_passwd);
+        $this->passwd = password_hash($_passwd, PASSWORD_DEFAULT);
     }
 
     public function addStudent()
