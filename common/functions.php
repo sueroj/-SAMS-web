@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
-require_once $_SERVER['DOCUMENT_ROOT'] . "/common/globals.php";
-//require_once "globals.php";
+require_once "globals.php";
 
 //functions.php: -Core database functions file intended to be called by the SAMS web application frontend.
 
@@ -851,7 +850,7 @@ class Database
     private function connectDb()
 	{
 		$pdo = "";
-		
+
 		try {
 			$pdo = new PDO("mysql:host=" . Globals::SERVER_LOGIN  . ";dbname=" . Globals::SERVER_DB, Globals::SERVER_USER, Globals::SERVER_PWD);
 			// set the PDO error mode to exception - ERRMODE_SILENT for demo build, ERRMODE_EXCEPTION for dev

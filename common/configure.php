@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
-require_once $_SERVER['DOCUMENT_ROOT'] . "/common/static_data.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/common/globals.php";
-require_once $_SERVER['DOCUMENT_ROOT'] . "/common/functions.php";
-//require_once "static_data.php";
-//require_once "globals.php";
-//require_once "functions.php";
+require_once "static_data.php";
+require_once "globals.php";
+require_once "functions.php";
 // Configure.php -Used to configure the samsdb database. 
 //               -Connects to database and creates all of the tables used in the web application.
 //               -Also loads initial static data used for demonstration.
@@ -331,9 +328,8 @@ class Configure
     
                 $pdo->exec($sql);     
             }
-            catch(PDOException $e){//test only
+            catch(PDOException $e){
                 echo "Database samsdb could not be created. Please verify your MySQL service is running.<br>";
-                echo "Error Detail: " . Globals::SERVER_LOGIN . " " . Globals::SERVER_DB . " " . Globals::SERVER_USER . "<br>";
             }
 			}
 		return $pdo;
